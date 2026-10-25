@@ -20,7 +20,7 @@ FIGURES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../figure
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
 # 1. Load sample CIFAR-100 images
-cifar_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../data_cache/cifar-100-python/train"))
+cifar_path = "/Users/visheshpanghal/Downloads/Chapters&Papers/TMLR/data_cache/cifar-100-python/train"
 sample_images = []
 if os.path.exists(cifar_path):
     with open(cifar_path, 'rb') as f:
@@ -197,7 +197,7 @@ draw_card(ax, (35.0, Y_TOP - 2.8), 21.2, 5.6, r"On-Target Reset Control ($C_3$)"
           items=[
               r"$\bullet$ Data: CIFAR-100 (Target) | Head: Temporary $h_{\rm temp}$ ($100$ classes)",
               r"$\bullet$ Boundary Resets: Velocity zeroed ($\mathbf{v} \leftarrow \mathbf{0}$) at $15\mathrm{k}$ and $20\mathrm{k}$",
-              r"$\bullet$ Post-Intervention State: Probe decodability = $\mathbf{56.12\%}$ ($N=6$)"
+              r"$\bullet$ Post-Intervention State: Probe decodability = $\mathbf{61.03\%}$ ($N=6$)"
           ],
           fill=C_C3_FILL, border=C_C3_BORDER, title_color=C_C3_BORDER, title_size=10.8, item_size=9.0)
 
@@ -206,7 +206,7 @@ draw_card(ax, (35.0, Y_MID - 2.8), 21.2, 5.6, r"Continuous Target Training ($C_0
           items=[
               r"$\bullet$ Data: CIFAR-100 (Target) | Head: Original $h_A$ active throughout",
               r"$\bullet$ Optimization: Continuous SGD momentum ($\mathbf{v}_t$ uninterrupted)",
-              r"$\bullet$ Uninterrupted State: Probe decodability = $\mathbf{61.85\%}$ ($N=6$)"
+              r"$\bullet$ Uninterrupted State: Probe decodability = $\mathbf{61.24\%}$ ($N=6$)"
           ],
           fill=C_C0_FILL, border=C_C0_BORDER, title_color=C_C0_BORDER, title_size=10.8, item_size=9.0)
 
@@ -240,7 +240,7 @@ draw_card(ax, (60.5, Y_TOP - 2.8), 18.5, 5.6, r"$C_3$ Terminal Relearning (35k)"
           items=[
               r"$\bullet$ Target head $h_A$ restored; momentum reset",
               r"$\bullet$ Final Test Accuracy: $\mathbf{56.29\%}$ (SD: $1.59\%$, $N=20$)",
-              r"$\bullet$ Probe: $62.14\%$ | Effective Rank: $157.80$ ($N=6$)"
+              r"$\bullet$ Probe: $62.52\%$ | Effective Rank: $162.37$ ($N=6$)"
           ],
           fill=C_C3_FILL, border=C_C3_BORDER, title_color=C_C3_BORDER, title_size=10.8, item_size=9.0)
 

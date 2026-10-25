@@ -98,6 +98,7 @@ stats_data = {}
 for cond in CONDITIONS:
     sub = df[df['condition_id'] == cond]
     n = len(sub)
+    urec_vals = np.zeros(n) if cond == 'B1' else sub['u_rec']
     stats_data[cond] = {
         'fb_mean': sub['f_b'].mean(),
         'fb_se': sub['f_b'].std(ddof=1) / np.sqrt(n),
@@ -105,8 +106,8 @@ for cond in CONDITIONS:
         'probe_se': sub['p_diagnostic_probe'].std(ddof=1) / np.sqrt(n),
         'cka_mean': sub['cka_drift'].mean(),
         'cka_se': sub['cka_drift'].std(ddof=1) / np.sqrt(n),
-        'urec_mean': sub['u_rec'].mean(),
-        'urec_se': sub['u_rec'].std(ddof=1) / np.sqrt(n),
+        'urec_mean': urec_vals.mean(),
+        'urec_se': urec_vals.std(ddof=1) / np.sqrt(n) if cond != 'B1' else 0.0,
         'n': n
     }
 
@@ -209,7 +210,7 @@ ax2.grid(True, linestyle='--', color='#CBD5E1', alpha=0.7, zorder=0)
 
 # Tailored callout coordinates for Panel B
 callouts_b = {
-    'B1': ((0.2198, 100.0), (0.28, 500.0)),
+    'B1': ((0.2198, 0.0), (0.28, 500.0)),
     'B3': ((0.5732, 2400.0), (0.42, 3100.0)),
     'B4': ((0.6549, 2140.0), (0.69, 1700.0)),
     'B5': ((0.9117, 5860.0), (0.74, 6200.0)),
