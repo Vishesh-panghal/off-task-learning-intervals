@@ -45,24 +45,24 @@ C_DARK = '#1C2833'
 steps = np.array([15.0, 20.0, 35.0])
 
 # 1. Matched Linear Probe Accuracy (%)
-probe_c0 = np.array([60.07, 61.85, 63.01])
-probe_c0_sd = np.array([0.81, 0.65, 0.58])
+probe_c0 = np.array([60.07, 61.24, 63.01])
+probe_c0_sd = np.array([0.50, 0.59, 0.94])
 
-probe_c3 = np.array([60.07, 56.12, 62.14])
-probe_c3_sd = np.array([0.81, 1.14, 0.69])
+probe_c3 = np.array([60.07, 61.03, 62.52])
+probe_c3_sd = np.array([0.50, 1.04, 1.08])
 
 probe_s1 = np.array([60.07, 20.65, 61.96])
-probe_s1_sd = np.array([0.81, 2.87, 0.74])
+probe_s1_sd = np.array([0.50, 0.74, 0.85])
 
 # 2. Effective Rank (EffRank)
-eff_c0 = np.array([178.04, 171.20, 162.45])
-eff_c0_sd = np.array([2.15, 2.45, 2.85])
+eff_c0 = np.array([178.04, 171.21, 162.45])
+eff_c0_sd = np.array([7.85, 7.31, 6.69])
 
-eff_c3 = np.array([178.04, 148.31, 157.80])
-eff_c3_sd = np.array([2.15, 3.22, 2.90])
+eff_c3 = np.array([178.04, 169.32, 162.37])
+eff_c3_sd = np.array([7.85, 6.98, 6.66])
 
 eff_s1 = np.array([178.04, 124.50, 153.69])
-eff_s1_sd = np.array([2.15, 4.82, 3.10])
+eff_s1_sd = np.array([7.85, 5.52, 6.76])
 
 # Canvas Setup: 2 Panels (a & b)
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13.2, 5.5), dpi=300)
