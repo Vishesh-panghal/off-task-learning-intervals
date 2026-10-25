@@ -1,0 +1,16 @@
+{
+  "config_sha256": "3d66dc80bc9f321894f12f47ab943230438ea24b547a47d2e613a18db587c266",
+  "release_sha256": "50ac319513c5341509518904f691aa743c5b644ab14f43d4b5d07551d57cd6f1",
+  "analysis_sha256": "890fac7148dce8cc455f075a37d19abd2ee2168138e777407f84dd801b4adac7",
+  "primary_family": [
+    "H1_equal_total"
+  ],
+  "alpha": 0.05,
+  "bootstrap": {
+    "count": 10000,
+    "seed": 173,
+    "method": "paired-seed percentile RandomState"
+  },
+  "sign_flip_assumption": "symmetry/exchangeability; exact enumeration only when N<=20",
+  "historical_test_exposed": true
+}

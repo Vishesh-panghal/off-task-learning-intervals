@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+
+# Checkpoint weights & large dataset caches (>100MB)
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+data_cache/
+cifar-100-python/
+stl10_binary/
+
+# OS and Editor artifacts
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.vscode/
+.idea/
+*.swp
+*~
+
+# LaTeX build outputs
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz

@@ -1,0 +1,21 @@
+seed,train_count,validation_count,clean_b1_count,clean_b1_validation_overlap,historical_full50k_b1_overlap,status
+42,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+123,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+456,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+789,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+2026,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1001,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1002,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1003,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1004,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1005,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1006,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1007,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1008,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1009,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+1010,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+3001,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+3002,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+3003,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+3004,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices
+3005,45000,5000,45000,0,5000,reconstructed arrays match supplied exports; not recovered historical execution indices

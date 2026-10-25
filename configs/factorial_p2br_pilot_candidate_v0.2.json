@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "study_id": "SOTLI-P2BR-20261016-pilot-v0.2",
+  "protocol_path": "protocol/P2BR_ENGINEERING_PILOT_v0.2.md",
+  "stage": "pilot",
+  "arms": [
+    "C0",
+    "C1",
+    "C2",
+    "C3",
+    "S1"
+  ],
+  "schedule": {
+    "initial": 15000,
+    "middle": 5000,
+    "final": 15000,
+    "target_comparator": 30000
+  },
+  "optimizer": {
+    "lr": 0.1,
+    "momentum": 0.9,
+    "weight_decay": 0.0005
+  },
+  "data": {
+    "split_seed": 271828,
+    "validation_size": 5000,
+    "batch_size": 128,
+    "geometry_count": 2000,
+    "geometry_seed": 271829
+  },
+  "diagnostics": {
+    "validation_interval": 100,
+    "probe_epochs": 5,
+    "probe_lr": 0.001,
+    "probe_weight_decay": 0.0001
+  },
+  "pilot_seeds": [
+    910001,
+    910002
+  ],
+  "confirmatory_candidate_seeds": [
+    920001,
+    920002,
+    920003,
+    920004,
+    920005,
+    920006,
+    920007,
+    920008,
+    920009,
+    920010
+  ],
+  "confirmatory_seeds": [],
+  "release": {
+    "g0_dispositions_accepted": true,
+    "g0_evidence_path": "protocol/G0_PILOT_SCOPE_DISPOSITIONS_v0.2.json",
+    "g0_evidence_sha256": "0d34325164816ef518c6d3eae47e2af5bdf8921a4d8ae81158463715cbf74e08",
+    "pilot_enabled": false,
+    "confirmatory_enabled": false,
+    "final_n": null,
+    "locked_protocol_sha256": null,
+    "lock_evidence_path": null,
+    "lock_evidence_sha256": null
+  }
+}

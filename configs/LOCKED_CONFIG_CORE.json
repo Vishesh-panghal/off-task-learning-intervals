@@ -1,0 +1,63 @@
+{
+  "schema_version": 2,
+  "study_id": "SOTLI-P2BR-FOCUSED-13H-20261017-v1",
+  "protocol_path": "protocol/P2BR_FOCUSED_13H_RELEASED_20261017.md",
+  "stage": "locked",
+  "arms": [
+    "C0",
+    "C3",
+    "S1"
+  ],
+  "schedule": {
+    "initial": 15000,
+    "middle": 5000,
+    "final": 15000,
+    "target_comparator": 30000
+  },
+  "optimizer": {
+    "lr": 0.1,
+    "momentum": 0.9,
+    "weight_decay": 0.0005
+  },
+  "data": {
+    "split_seed": 271828,
+    "validation_size": 5000,
+    "batch_size": 128,
+    "geometry_count": 2000,
+    "geometry_seed": 271829
+  },
+  "diagnostics": {
+    "validation_interval": 100,
+    "probe_epochs": 5,
+    "probe_lr": 0.001,
+    "probe_weight_decay": 0.0001
+  },
+  "pilot_seeds": [],
+  "confirmatory_candidate_seeds": [
+    920001,
+    920002,
+    920003,
+    920004,
+    920005,
+    920006
+  ],
+  "confirmatory_seeds": [
+    920001,
+    920002,
+    920003,
+    920004,
+    920005,
+    920006
+  ],
+  "release": {
+    "g0_dispositions_accepted": true,
+    "g0_evidence_path": "protocol/focused_13h_20261017/release/G0_RELEASED_SCOPE.json",
+    "g0_evidence_sha256": "2df280d41d67cabb0c93ded93fc07dd8a77ed73e39ab0a3156dda1f7b692d3aa",
+    "pilot_enabled": false,
+    "confirmatory_enabled": true,
+    "final_n": 6,
+    "locked_protocol_sha256": "935436ce6800695295821391d4501669fa98792bdb9ed75abe25ed9a385795ab",
+    "lock_evidence_path": "protocol/focused_13h_20261017/release/LOCK_EVIDENCE.json",
+    "lock_evidence_sha256": null
+  }
+}
