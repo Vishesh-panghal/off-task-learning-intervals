@@ -21,7 +21,7 @@ from src.models.resnet_pretrained import PretrainedResNet50DualHead
 from src.data.datasets import (
     get_applied_isic2019_loaders, get_applied_imagenette_loader, get_applied_isic_probe_loader
 )
-from src.training.applied_harness import run_applied_finetune_experiment
+from src.training.applied_harness import run_applied_finetune_experiment, CircuitBreakerError
 
 
 CSV_FIELDNAMES = [
@@ -65,6 +65,7 @@ def main():
     parser.add_argument("--splits_dir", type=str, default="./data_cache/splits")
     parser.add_argument("--checkpoint_dir", type=str, default="./checkpoints/applied")
     parser.add_argument("--csv_output", type=str, default="./results/applied_runs.csv")
+    parser.add_argument("--log_interval", type=int, default=250, help="Updates between trajectory logs (default: 250)")
     args = parser.parse_args()
 
     isic_splits = os.path.join(args.splits_dir, "isic2019_splits.json")
@@ -105,71 +106,93 @@ def main():
             model = PretrainedResNet50DualHead(num_classes_a=8)
             seed_ckpt_dir = os.path.join(args.checkpoint_dir, f"seed_{seed}", cond)
 
-            res = run_applied_finetune_experiment(
-                model=model,
-                train_loader_a=train_l,
-                val_loader_a=val_l,
-                test_loader_a=test_l,
-                probe_loader=probe_l,
-                aux_loader=aux_l if cond in ['S1', 'S1-shuf'] else None,
-                condition=cond,
-                seed=seed,
-                u1=args.u1,
-                uB=args.uB,
-                u2=args.u2,
-                base_lr=args.base_lr,
-                warmup_steps=args.warmup_steps,
-                device=args.device,
-                checkpoint_dir=seed_ckpt_dir,
-                eval_probe=True,
-                log_interval=500
-            )
+            try:
+                res = run_applied_finetune_experiment(
+                    model=model,
+                    train_loader_a=train_l,
+                    val_loader_a=val_l,
+                    test_loader_a=test_l,
+                    probe_loader=probe_l,
+                    aux_loader=aux_l if cond in ['S1', 'S1-shuf'] else None,
+                    condition=cond,
+                    seed=seed,
+                    u1=args.u1,
+                    uB=args.uB,
+                    u2=args.u2,
+                    base_lr=args.base_lr,
+                    warmup_steps=args.warmup_steps,
+                    device=args.device,
+                    checkpoint_dir=seed_ckpt_dir,
+                    eval_probe=True,
+                    log_interval=args.log_interval
+                )
 
-            # Extract metrics for CSV
-            t1 = res["checkpoints"].get("theta1", {})
-            t1_m = t1.get("metrics", {})
-            t1_d = t1.get("diagnostics", {})
+                # Extract metrics for CSV
+                t1 = res["checkpoints"].get("theta1", {})
+                t1_m = t1.get("metrics", {})
+                t1_d = t1.get("diagnostics", {})
 
-            t2 = res["checkpoints"].get("theta2", {})
-            t2_d = t2.get("diagnostics", {})
+                t2 = res["checkpoints"].get("theta2", {})
+                t2_d = t2.get("diagnostics", {})
 
-            t10k = res["checkpoints"].get("theta_10k", {})
-            t10k_m = t10k.get("metrics", {})
+                t10k = res["checkpoints"].get("theta_10k", {})
+                t10k_m = t10k.get("metrics", {})
 
-            t3 = res["checkpoints"].get("theta3", {})
-            t3_m = t3.get("metrics", {})
-            t3_d = t3.get("diagnostics", {})
+                t3 = res["checkpoints"].get("theta3", {})
+                t3_m = t3.get("metrics", {})
+                t3_d = t3.get("diagnostics", {})
 
-            row = {
-                "condition": cond,
-                "seed": seed,
-                "u1": args.u1,
-                "uB": args.uB,
-                "u2": args.u2,
-                "total_updates": args.u1 + args.uB + args.u2,
-                "theta1_top1": t1_m.get("top1_accuracy", ""),
-                "theta1_auc": t1_m.get("macro_auc", ""),
-                "theta1_bal_acc": t1_m.get("balanced_accuracy", ""),
-                "theta1_eff_rank": t1_d.get("eff_rank", ""),
-                "theta2_eff_rank": t2_d.get("eff_rank", ""),
-                "theta2_cka_drift": t2_d.get("cka_drift", ""),
-                "theta_10k_top1": t10k_m.get("top1_accuracy", ""),
-                "theta_10k_auc": t10k_m.get("macro_auc", ""),
-                "theta3_top1": t3_m.get("top1_accuracy", ""),
-                "theta3_auc": t3_m.get("macro_auc", ""),
-                "theta3_bal_acc": t3_m.get("balanced_accuracy", ""),
-                "theta3_ece": t3_m.get("ece", ""),
-                "theta3_brier": t3_m.get("brier_score", ""),
-                "theta3_eff_rank": t3_d.get("eff_rank", ""),
-                "theta3_cka_drift": t3_d.get("cka_drift", ""),
-                "total_wall_time_s": round(res["total_wall_time_seconds"], 2),
-                "avg_step_ms": round(res["avg_step_time_ms"], 2),
-                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            }
+                row = {
+                    "condition": cond,
+                    "seed": seed,
+                    "u1": args.u1,
+                    "uB": args.uB,
+                    "u2": args.u2,
+                    "total_updates": args.u1 + args.uB + args.u2,
+                    "theta1_top1": t1_m.get("top1_accuracy", ""),
+                    "theta1_auc": t1_m.get("macro_auc", ""),
+                    "theta1_bal_acc": t1_m.get("balanced_accuracy", ""),
+                    "theta1_eff_rank": t1_d.get("eff_rank", ""),
+                    "theta2_eff_rank": t2_d.get("eff_rank", ""),
+                    "theta2_cka_drift": t2_d.get("cka_drift", ""),
+                    "theta_10k_top1": t10k_m.get("top1_accuracy", ""),
+                    "theta_10k_auc": t10k_m.get("macro_auc", ""),
+                    "theta3_top1": t3_m.get("top1_accuracy", ""),
+                    "theta3_auc": t3_m.get("macro_auc", ""),
+                    "theta3_bal_acc": t3_m.get("balanced_accuracy", ""),
+                    "theta3_ece": t3_m.get("ece", ""),
+                    "theta3_brier": t3_m.get("brier_score", ""),
+                    "theta3_eff_rank": t3_d.get("eff_rank", ""),
+                    "theta3_cka_drift": t3_d.get("cka_drift", ""),
+                    "total_wall_time_s": round(res["total_wall_time_seconds"], 2),
+                    "avg_step_ms": round(res["avg_step_time_ms"], 2),
+                    "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                }
 
-            append_result_to_csv(args.csv_output, row)
-            print(f"[Runner] Saved result row for {cond} (Seed {seed}) to {args.csv_output}\n")
+                append_result_to_csv(args.csv_output, row)
+                print(f"[Runner] Saved result row for {cond} (Seed {seed}) to {args.csv_output}\n")
+
+            except CircuitBreakerError as cbe:
+                elapsed_abort = time.time() - run_start_time
+                print(f"\n{'!'*65}")
+                print(f"[CIRCUIT BREAKER ABORT] {cbe}")
+                print(f"Aborting {cond} (Seed {seed}) after {elapsed_abort:.1f}s to preserve GPU compute.")
+                print(f"{'!'*65}\n")
+
+                row = {
+                    "condition": cond,
+                    "seed": seed,
+                    "u1": args.u1,
+                    "uB": args.uB,
+                    "u2": args.u2,
+                    "total_updates": args.u1 + args.uB + args.u2,
+                    "theta1_top1": f"ABORTED_CIRCUIT_BREAKER: {cbe}",
+                    "total_wall_time_s": round(elapsed_abort, 2),
+                    "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                }
+                append_result_to_csv(args.csv_output, row)
 
 
 if __name__ == "__main__":
     main()
+

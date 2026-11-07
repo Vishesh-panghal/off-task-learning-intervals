@@ -220,12 +220,15 @@ def evaluate_applied_metrics(model, loader, device, num_classes=8, head='A'):
     all_probs = []
     all_preds = []
     all_labels = []
+    total_loss = 0.0
 
     with torch.no_grad():
         for images, labels in loader:
             images = images.to(device)
             labels = labels.to(device)
             outputs = model(images, head=head)
+            loss_batch = F.cross_entropy(outputs, labels, reduction='sum')
+            total_loss += float(loss_batch.item())
             probs = F.softmax(outputs, dim=1)
             _, predicted = outputs.max(1)
 
@@ -236,6 +239,7 @@ def evaluate_applied_metrics(model, loader, device, num_classes=8, head='A'):
     all_probs = torch.cat(all_probs, dim=0).numpy()
     all_preds = torch.cat(all_preds, dim=0).numpy()
     all_labels = torch.cat(all_labels, dim=0).numpy()
+    val_loss = float(total_loss / max(1, len(all_labels)))
 
     # 1. Top-1 Accuracy
     top1 = float(np.mean(all_preds == all_labels) * 100.0)
@@ -270,6 +274,7 @@ def evaluate_applied_metrics(model, loader, device, num_classes=8, head='A'):
     brier = compute_brier_score(all_probs, all_labels, num_classes=num_classes)
 
     return {
+        "val_loss": val_loss,
         "top1_accuracy": top1,
         "balanced_accuracy": bal_acc,
         "macro_auc": macro_auc,

@@ -16,17 +16,20 @@ Specifications (from MVA_12K_FINETUNE_PLAN.md):
   * 500-step linear warmup applied at step 1 for all arms, then constant LR 0.01
   * PyTorch Automatic Mixed Precision (AMP)
   * BatchNorm running statistics preserved across boundaries
-- Diagnostics recorded at theta1 (5k), theta2 (7k), theta3 (12k), and 10k (equal-target comparator):
-  * Top-1 Accuracy, Macro one-vs-rest AUC, Balanced Accuracy
-  * Expected Calibration Error (ECE) and Brier score
-  * Effective Representation Rank (EffRank) on centered 2,000-image probe
-  * Linear CKA representation drift vs theta1 on probe
+- Circuit Breakers:
+  * Halts immediately on numerical divergence (loss > 5.0, NaN, Inf)
+  * Halts on severe class collapse (balanced accuracy < 10.0% post-warmup)
+- Diagnostics & Live Dashboard:
+  * Real-time training & validation tracking exported to CSV every 250 updates
+  * Automated 3-panel publication-grade trajectory plotting
 """
 
 import os
+import sys
 import copy
 import time
 import json
+import csv
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -37,6 +40,19 @@ from src.utils.metrics import (
     extract_probe_features, compute_effective_rank, compute_linear_cka,
     train_and_eval_linear_probe
 )
+
+try:
+    from scripts.plot_live_applied_progress import plot_applied_trajectory
+except Exception:
+    try:
+        from plot_live_applied_progress import plot_applied_trajectory
+    except Exception:
+        plot_applied_trajectory = None
+
+
+class CircuitBreakerError(RuntimeError):
+    """Raised when training dynamics diverge or degenerate to save GPU compute."""
+    pass
 
 
 def infinite_loader(dataloader):
@@ -106,10 +122,11 @@ def run_applied_finetune_experiment(
     device='cuda',
     checkpoint_dir='./checkpoints/applied',
     eval_probe=True,
-    log_interval=500
+    log_interval=250
 ):
     """
     Executes an applied fine-tuning run for condition under exact update budgeting.
+    Monitors convergence via live CSV logging and triggers circuit breaker on divergence.
     """
     os.makedirs(checkpoint_dir, exist_ok=True)
     device = torch.device(device)
@@ -121,8 +138,6 @@ def run_applied_finetune_experiment(
     equal_target_step = u1 + u2  # 10,000 for equal target exposure
 
     # Arm boundary configurations:
-    # head_swap: whether Head A is replaced during Phase 2
-    # momentum_reset: whether momentum buffers are zeroed at boundaries
     condition_configs = {
         'C0': {'head_swap': False, 'momentum_reset': False, 'phase2_task': 'A'},
         'C3': {'head_swap': True,  'momentum_reset': True,  'phase2_task': 'A_temp'},
@@ -164,13 +179,26 @@ def run_applied_finetune_experiment(
         "step_times": [],
     }
 
+    # Initialize live trajectory CSV
+    traj_csv_path = os.path.join(checkpoint_dir, "training_trajectory.csv")
+    dashboard_png_path = os.path.join(checkpoint_dir, "training_trajectory_dashboard.png")
+    traj_fields = ["step", "train_loss", "val_loss", "val_top1", "val_bal_acc", "val_macro_auc", "eff_rank", "lr", "elapsed_s"]
+
+    with open(traj_csv_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=traj_fields)
+        writer.writeheader()
+
     theta1_probe_features = None
     start_wall_time = time.time()
+    interval_train_loss = 0.0
+    interval_steps = 0
 
     print(f"\n========================================================")
     print(f"[{condition} | Seed {seed}] Starting Applied Fine-Tuning Run ({total_updates} updates)")
     print(f"Phase 1: 1..{boundary_1} | Phase 2: {boundary_1 + 1}..{boundary_2} | Phase 3: {boundary_2 + 1}..{total_updates}")
     print(f"Device: {device} | AMP: {scaler.is_enabled()} | Head Swap: {do_head_swap} | Momentum Reset: {do_momentum_reset}")
+    print(f"Trajectory CSV: {traj_csv_path}")
+    print(f"Live Dashboard: {dashboard_png_path}")
     print(f"========================================================\n")
 
     current_head = 'A'
@@ -243,28 +271,104 @@ def run_applied_finetune_experiment(
             outputs = model(images, head=current_head)
             loss = criterion(outputs, labels)
 
+        # Circuit Breaker 1: Numerical explosion check
+        loss_val = float(loss.item())
+        if torch.isnan(loss) or torch.isinf(loss) or loss_val > 5.0:
+            raise CircuitBreakerError(
+                f"Circuit breaker triggered: numerical instability/divergence at step {step} (loss={loss_val})"
+            )
+
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
 
         step_elapsed = time.time() - step_start
         run_metrics["step_times"].append(step_elapsed)
+        interval_train_loss += loss_val
+        interval_steps += 1
+
+        is_boundary_1 = (step == boundary_1)
+        is_boundary_2 = (step == boundary_2)
+        is_equal_target = (step == equal_target_step and condition == 'C0')
+        is_periodic_log = (step % log_interval == 0)
+
+        # ----------------------------------------------------
+        # Periodic Diagnostics, Circuit Breakers & Trajectory Update
+        # ----------------------------------------------------
+        if is_periodic_log or is_boundary_1 or is_boundary_2 or is_equal_target:
+            avg_train_loss = interval_train_loss / max(1, interval_steps)
+            interval_train_loss = 0.0
+            interval_steps = 0
+
+            # Evaluate Target Task A validation performance
+            val_m = evaluate_applied_metrics(model, val_loader_a, device, num_classes=8, head='A')
+
+            # Circuit Breaker 2: Degenerate class collapse
+            # Only checked during Phase 1 (post warmup) and Phase 3 (relearning)
+            if (1000 <= step <= boundary_1) and (val_m['balanced_accuracy'] < 10.0):
+                raise CircuitBreakerError(
+                    f"Circuit breaker triggered: Phase 1 class collapse at step {step} "
+                    f"(balanced accuracy {val_m['balanced_accuracy']:.2f}% < 10.0%)"
+                )
+            if (step > boundary_2 + 1000) and (val_m['balanced_accuracy'] < 10.0):
+                raise CircuitBreakerError(
+                    f"Circuit breaker triggered: Phase 3 class collapse at step {step} "
+                    f"(balanced accuracy {val_m['balanced_accuracy']:.2f}% < 10.0%)"
+                )
+
+            # Representation EffRank diagnostics
+            current_er = None
+            if eval_probe and probe_loader is not None and (step % 1000 == 0 or is_boundary_1 or is_boundary_2):
+                probe_feats = extract_probe_features(model, probe_loader, device)
+                current_er = compute_effective_rank(probe_feats)
+
+            # Append to trajectory CSV
+            with open(traj_csv_path, "a", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=traj_fields)
+                writer.writerow({
+                    "step": step,
+                    "train_loss": f"{avg_train_loss:.4f}",
+                    "val_loss": f"{val_m['val_loss']:.4f}",
+                    "val_top1": f"{val_m['top1_accuracy']:.2f}",
+                    "val_bal_acc": f"{val_m['balanced_accuracy']:.2f}",
+                    "val_macro_auc": f"{val_m['macro_auc']:.4f}",
+                    "eff_rank": f"{current_er:.2f}" if current_er is not None else "",
+                    "lr": f"{current_lr:.6f}",
+                    "elapsed_s": f"{time.time() - start_wall_time:.1f}",
+                })
+
+            # Regenerate live visual dashboard
+            if plot_applied_trajectory is not None:
+                try:
+                    plot_applied_trajectory(
+                        trajectory_csv=traj_csv_path,
+                        output_png=dashboard_png_path,
+                        condition=condition,
+                        seed=seed,
+                        u1=u1,
+                        uB=uB,
+                        u2=u2
+                    )
+                except Exception as pe:
+                    print(f"[{condition} | Seed {seed}] Warning: dashboard plot failed: {pe}")
+
+            # Console output
+            avg_step_ms = (sum(run_metrics["step_times"][-log_interval:]) / max(1, min(log_interval, len(run_metrics["step_times"])))) * 1000.0
+            print(f"[{condition} | Seed {seed}] Step {step}/{total_updates} | Loss: {avg_train_loss:.4f} | Val Loss: {val_m['val_loss']:.4f} | Top-1: {val_m['top1_accuracy']:.2f}% | Bal Acc: {val_m['balanced_accuracy']:.2f}% | AUC: {val_m['macro_auc']:.4f} | LR: {current_lr:.5f} | Step Time: {avg_step_ms:.1f}ms")
 
         # ----------------------------------------------------
         # Milestone Checkpoint 1 (theta1 at step u1)
         # ----------------------------------------------------
-        if step == boundary_1:
+        if is_boundary_1:
             ckpt_path = os.path.join(checkpoint_dir, f"{condition}_seed{seed}_theta1.pt")
             torch.save(model.state_dict(), ckpt_path)
-            val_m = evaluate_applied_metrics(model, val_loader_a, device, num_classes=8, head='A')
-            print(f"[{condition} | theta1 @ step {step}] Val Top-1: {val_m['top1_accuracy']:.2f}%, Macro AUC: {val_m['macro_auc']:.4f}, Bal Acc: {val_m['balanced_accuracy']:.2f}%")
             
             diag = {}
             if eval_probe and probe_loader is not None:
                 theta1_probe_features = extract_probe_features(model, probe_loader, device)
                 diag["eff_rank"] = compute_effective_rank(theta1_probe_features)
                 diag["cka_drift"] = 0.0
-                print(f"[{condition} | theta1] EffRank: {diag['eff_rank']:.2f}")
+                print(f"[{condition} | theta1 @ step {step}] EffRank: {diag['eff_rank']:.2f}")
 
             run_metrics["checkpoints"]["theta1"] = {
                 "step": step,
@@ -276,7 +380,7 @@ def run_applied_finetune_experiment(
         # ----------------------------------------------------
         # Milestone Checkpoint 2 (theta2 at step u1 + uB)
         # ----------------------------------------------------
-        if step == boundary_2:
+        if is_boundary_2:
             ckpt_path = os.path.join(checkpoint_dir, f"{condition}_seed{seed}_theta2.pt")
             torch.save(model.state_dict(), ckpt_path)
             diag = {}
@@ -295,21 +399,15 @@ def run_applied_finetune_experiment(
         # ----------------------------------------------------
         # Equal-Target Comparator (Step u1 + u2 = 10,000 updates on Task A)
         # ----------------------------------------------------
-        if step == equal_target_step and condition == 'C0':
+        if is_equal_target:
             ckpt_path = os.path.join(checkpoint_dir, f"{condition}_seed{seed}_theta_10k_equal_target.pt")
             torch.save(model.state_dict(), ckpt_path)
-            val_10k = evaluate_applied_metrics(model, val_loader_a, device, num_classes=8, head='A')
-            print(f"[{condition} | Equal-Target @ step {step}] Val Top-1: {val_10k['top1_accuracy']:.2f}%, Macro AUC: {val_10k['macro_auc']:.4f}")
+            print(f"[{condition} | Equal-Target @ step {step}] Val Top-1: {val_m['top1_accuracy']:.2f}%, Macro AUC: {val_m['macro_auc']:.4f}")
             run_metrics["checkpoints"]["theta_10k"] = {
                 "step": step,
-                "metrics": val_10k,
+                "metrics": val_m,
                 "checkpoint": ckpt_path,
             }
-
-        # Periodic progress logging
-        if step % log_interval == 0:
-            avg_step_ms = (sum(run_metrics["step_times"][-log_interval:]) / log_interval) * 1000.0
-            print(f"[{condition} | Seed {seed}] Step {step}/{total_updates} | Loss: {loss.item():.4f} | LR: {current_lr:.5f} | Head: {current_head} | Step Time: {avg_step_ms:.1f}ms")
 
     # ----------------------------------------------------
     # Terminal Evaluation (theta3 at total_updates)
@@ -324,8 +422,38 @@ def run_applied_finetune_experiment(
         diag["eff_rank"] = compute_effective_rank(feat3)
         diag["cka_drift"] = 1.0 - compute_linear_cka(theta1_probe_features, feat3)
 
+    # Final trajectory row
+    with open(traj_csv_path, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=traj_fields)
+        writer.writerow({
+            "step": total_updates,
+            "train_loss": f"{loss_val:.4f}",
+            "val_loss": f"{val_terminal['val_loss']:.4f}",
+            "val_top1": f"{val_terminal['top1_accuracy']:.2f}",
+            "val_bal_acc": f"{val_terminal['balanced_accuracy']:.2f}",
+            "val_macro_auc": f"{val_terminal['macro_auc']:.4f}",
+            "eff_rank": f"{diag.get('eff_rank', 0.0):.2f}" if diag else "",
+            "lr": f"{current_lr:.6f}",
+            "elapsed_s": f"{time.time() - start_wall_time:.1f}",
+        })
+
+    # Final dashboard render
+    if plot_applied_trajectory is not None:
+        try:
+            plot_applied_trajectory(
+                trajectory_csv=traj_csv_path,
+                output_png=dashboard_png_path,
+                condition=condition,
+                seed=seed,
+                u1=u1,
+                uB=uB,
+                u2=u2
+            )
+        except Exception as pe:
+            print(f"[{condition} | Seed {seed}] Final dashboard plot error: {pe}")
+
     total_wall_time = time.time() - start_wall_time
-    avg_step_time_ms = (sum(run_metrics["step_times"]) / len(run_metrics["step_times"])) * 1000.0
+    avg_step_time_ms = (sum(run_metrics["step_times"]) / max(1, len(run_metrics["step_times"]))) * 1000.0
 
     print(f"\n========================================================")
     print(f"[{condition} | Seed {seed}] COMPLETED in {total_wall_time:.1f}s (Avg step: {avg_step_time_ms:.1f}ms)")
