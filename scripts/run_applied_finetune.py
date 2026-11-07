@@ -84,12 +84,9 @@ def main():
     print(f" Results CSV: {args.csv_output}")
     print("="*65 + "\n")
 
-    print("[Runner] Initializing DataLoaders...")
+    print("[Runner] Initializing Target and Probe DataLoaders...")
     train_l, val_l, test_l = get_applied_isic2019_loaders(
         isic_splits, isic_images, batch_size=args.batch_size, num_workers=4
-    )
-    aux_l, _ = get_applied_imagenette_loader(
-        imagenette_splits, imagenette_dir, batch_size=args.batch_size, num_workers=4
     )
     probe_l = get_applied_isic_probe_loader(
         probe_json, isic_images, batch_size=args.batch_size, num_workers=4
@@ -106,6 +103,20 @@ def main():
             model = PretrainedResNet50DualHead(num_classes_a=8)
             seed_ckpt_dir = os.path.join(args.checkpoint_dir, f"seed_{seed}", cond)
 
+            # Build condition-specific auxiliary loader if needed
+            if cond == 'S1':
+                aux_loader, _ = get_applied_imagenette_loader(
+                    imagenette_splits, imagenette_dir, batch_size=args.batch_size,
+                    num_workers=4, shuffle_labels=False, seed=seed
+                )
+            elif cond == 'S1-shuf':
+                aux_loader, _ = get_applied_imagenette_loader(
+                    imagenette_splits, imagenette_dir, batch_size=args.batch_size,
+                    num_workers=4, shuffle_labels=True, seed=seed
+                )
+            else:
+                aux_loader = None
+
             try:
                 res = run_applied_finetune_experiment(
                     model=model,
@@ -113,7 +124,7 @@ def main():
                     val_loader_a=val_l,
                     test_loader_a=test_l,
                     probe_loader=probe_l,
-                    aux_loader=aux_l if cond in ['S1', 'S1-shuf'] else None,
+                    aux_loader=aux_loader,
                     condition=cond,
                     seed=seed,
                     u1=args.u1,
