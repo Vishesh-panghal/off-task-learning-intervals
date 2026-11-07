@@ -4,11 +4,19 @@ Standardized on 32x32 RGB inputs across all tasks.
 """
 
 import os
+import json
+from pathlib import Path
+from PIL import Image
 import torch
 from torch.utils.data import Dataset, DataLoader, Subset
 import torchvision
 import torchvision.transforms as transforms
 import numpy as np
+
+
+# Standard ImageNet normalization stats (for pretrained 224x224 vision regime)
+IMAGENET_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_STD = (0.229, 0.224, 0.225)
 
 
 # Standard CIFAR-100 normalization stats
@@ -226,3 +234,193 @@ def get_fixed_probe_set(data_dir="./data_cache", num_samples=2000, seed=42):
     probe_subset = Subset(full_val, indices)
     probe_loader = DataLoader(probe_subset, batch_size=128, shuffle=False, num_workers=2)
     return probe_loader
+
+
+# =====================================================================
+# Applied Fine-Tuning Regime: 224x224 Datasets (ISIC 2019 & Imagenette)
+# =====================================================================
+
+class ISIC2019Dataset(Dataset):
+    """
+    Target Task A: ISIC 2019 Skin Lesion Classification (8 classes).
+    Loads images based on prespecified, deterministic stratified splits.
+    """
+    def __init__(self, splits_json, images_dir, split="train", transform=None):
+        super().__init__()
+        self.images_dir = Path(images_dir)
+        self.transform = transform
+        self.split = split
+
+        with open(splits_json, "r") as f:
+            data = json.load(f)
+
+        if split not in ["train", "val", "test"]:
+            raise ValueError(f"Invalid split '{split}'. Expected 'train', 'val', or 'test'.")
+
+        self.samples = data[split]
+        self.num_classes = data.get("num_classes", 8)
+        self.classes = data.get("classes", ["MEL", "NV", "BCC", "AK", "BKL", "DF", "VASC", "SCC"])
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        item = self.samples[idx]
+        image_id = item["image_id"]
+        # Try both direct name and .jpg suffix
+        img_path = self.images_dir / f"{image_id}.jpg"
+        if not img_path.exists():
+            img_path = self.images_dir / image_id
+            if not img_path.exists():
+                raise FileNotFoundError(f"Image file not found: {img_path}")
+
+        img = Image.open(img_path).convert("RGB")
+        if self.transform is not None:
+            img = self.transform(img)
+
+        label = torch.tensor(item["label"], dtype=torch.long)
+        return img, label
+
+
+class ImagenetteDataset(Dataset):
+    """
+    Auxiliary Task B: Imagenette 10-class natural images subset.
+    Supports deterministic label-shuffled control (S1-shuf).
+    """
+    def __init__(self, splits_json, root_dir, split="train", shuffle_labels=False, seed=42, transform=None):
+        super().__init__()
+        self.root_dir = Path(root_dir)
+        self.transform = transform
+        self.split = split
+        self.shuffle_labels = shuffle_labels
+
+        with open(splits_json, "r") as f:
+            data = json.load(f)
+
+        if split not in ["train", "val"]:
+            raise ValueError(f"Invalid split '{split}'. Expected 'train' or 'val'.")
+
+        self.samples = data[split]
+        self.num_classes = data.get("num_classes", 10)
+
+        # Store labels; optionally apply fixed label permutation
+        raw_labels = np.array([s["label"] for s in self.samples], dtype=np.int64)
+        if shuffle_labels:
+            rng = np.random.RandomState(seed)
+            self.labels = rng.permutation(raw_labels)
+        else:
+            self.labels = raw_labels
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        item = self.samples[idx]
+        img_path = self.root_dir / item["rel_path"]
+        if not img_path.exists():
+            raise FileNotFoundError(f"Imagenette image not found: {img_path}")
+
+        img = Image.open(img_path).convert("RGB")
+        if self.transform is not None:
+            img = self.transform(img)
+
+        label = torch.tensor(self.labels[idx], dtype=torch.long)
+        return img, label
+
+
+class ISICProbeDataset(Dataset):
+    """
+    Deterministic 2,000-image diagnostic probe set for Effective Rank and CKA drift.
+    """
+    def __init__(self, probe_json, images_dir, transform=None):
+        super().__init__()
+        self.images_dir = Path(images_dir)
+        self.transform = transform
+
+        with open(probe_json, "r") as f:
+            data = json.load(f)
+
+        self.samples = data["samples"]
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        item = self.samples[idx]
+        image_id = item["image_id"]
+        img_path = self.images_dir / f"{image_id}.jpg"
+        if not img_path.exists():
+            img_path = self.images_dir / image_id
+
+        img = Image.open(img_path).convert("RGB")
+        if self.transform is not None:
+            img = self.transform(img)
+
+        label = torch.tensor(item["label"], dtype=torch.long)
+        return img, label
+
+
+def get_applied_isic2019_loaders(splits_json, images_dir, batch_size=64, num_workers=4):
+    """
+    Builds train, validation, and held-out test loaders for ISIC 2019 at 224x224.
+    Train augmentation: RandomResizedCrop(224, scale=(0.7, 1.0)), RandomHorizontalFlip.
+    Evaluation: Resize((224, 224)), ImageNet normalization.
+    """
+    train_transform = transforms.Compose([
+        transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+    ])
+
+    eval_transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+    ])
+
+    train_dataset = ISIC2019Dataset(splits_json, images_dir, split="train", transform=train_transform)
+    val_dataset = ISIC2019Dataset(splits_json, images_dir, split="val", transform=eval_transform)
+    test_dataset = ISIC2019Dataset(splits_json, images_dir, split="test", transform=eval_transform)
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
+                              num_workers=num_workers, pin_memory=True, drop_last=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False,
+                            num_workers=num_workers, pin_memory=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False,
+                             num_workers=num_workers, pin_memory=True)
+
+    return train_loader, val_loader, test_loader
+
+
+def get_applied_imagenette_loader(splits_json, root_dir, batch_size=64, num_workers=4, shuffle_labels=False, seed=42):
+    """
+    Builds DataLoader for Auxiliary Task B (Imagenette) at 224x224.
+    """
+    train_transform = transforms.Compose([
+        transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+    ])
+
+    dataset = ImagenetteDataset(splits_json, root_dir, split="train",
+                                shuffle_labels=shuffle_labels, seed=seed, transform=train_transform)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True,
+                        num_workers=num_workers, pin_memory=True, drop_last=True)
+    return loader, 10
+
+
+def get_applied_isic_probe_loader(probe_json, images_dir, batch_size=64, num_workers=4):
+    """
+    Builds DataLoader for the deterministic 2,000-image diagnostic probe set.
+    """
+    eval_transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+    ])
+    dataset = ISICProbeDataset(probe_json, images_dir, transform=eval_transform)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
+    return loader
+
