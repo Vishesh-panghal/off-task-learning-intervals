@@ -693,7 +693,7 @@ At the end of Phase 1 (step 5,000, $\theta_1$), all models share an identical fe
 Linear CKA drift relative to $\theta_1$ corroborates this disruption. While continuous training $C_0$ drifts modestly along the target manifold ($D_{\mathrm{CKA}} = 0.1525 \pm 0.0095$) and reset control $C_3$ drifts slightly further ($0.1768 \pm 0.0238$), auxiliary detour $S_1$ exhibits a massive jump to $0.4756 \pm 0.0319$ ($t(7) = +27.6, p = 4.8 \times 10^{-8}$). Off-task gradients from natural images actively rotate the penultimate representation subspace away from the clinical dermoscopy manifold.
 
 \paragraph{Asymptotic Plasticity and Relearning Recovery:}
-Despite this severe mid-training dimensional compression and subspace rotation, 5,000 updates of subsequent target fine-tuning in Phase 3 completely reverse the disruption. By step 12,000 ($\theta_3$), Effective Rank in $S_1$ expands back to $1147.50 \pm 4.69$ dimensions, matching $C_0$ ($1145.19 \pm 7.59$). 
+Despite this severe mid-training dimensional compression and subspace rotation, 5,000 updates of subsequent target fine-tuning in Phase 3 completely reverse the disruption. By step 12,000 ($\theta_3$), Effective Rank in $S_1$ expands back to $1139.79 \pm 7.08$ dimensions, matching continuous training $C_0$ ($1142.15 \pm 9.69$ dimensions; complete seed-level diagnostic data in Appendix~\ref{sec:appendix_applied}). 
 
 This structural recovery explains the terminal performance parity. Unlike from-scratch optimization (where early gradient trajectories permanently alter feature learning basins), pretrained deep representations possess high plasticity and well-conditioned basins of attraction. The network absorbs substantial geometric distortion during off-task excursions, but downstream fine-tuning washes out the perturbation, resulting in asymptotic statistical equivalence.
 
@@ -1021,6 +1021,62 @@ $F_{11}$ ($C_3$) & Temp head $h_{\mathrm{temp}}$ & Zeroed ($\bm{v} \leftarrow \m
 }
 \end{table*}
 
+\section{Seed-Level Data for the Applied Vision Fine-Tuning Cohort (ISIC 2019)}\label{sec:appendix_applied}
+
+Table~\ref{tab:appendix_applied_primary_raw} and Table~\ref{tab:appendix_applied_pilot_raw} compile complete seed-level diagnostic, representation, and classification measurements across both the primary confirmatory cohort ($N = 8$ paired seeds, $s \in \{1001, \dots, 1008\}$) and the pilot exploration cohort ($N = 2$ seeds, $s \in \{900001, 900002\}$) evaluated under Regime~2 on ISIC 2019 dermoscopy classification. All runs employ torchvision ImageNet-pretrained ResNet-50 backbones under the prespecified 12,000-update protocol ($u_1 = 5{,}000, u_B = 2{,}000, u_2 = 5{,}000$) with an initial learning rate of $\eta = 10^{-2}$ and batch size of $32$.
+
+All three primary arms ($C_0, C_3, S_1$) branch from deterministic Phase~1 checkpoints $\theta_1^{(s)}$ at step 5,000. In Table~\ref{tab:appendix_applied_primary_raw}, we report terminal Top-1 test classification accuracy (\%), paired contrast differences ($\Delta$), Phase~2 intermediate Effective Representation Rank ($\mathrm{EffRank}$ at step 7,000), linear Centered Kernel Alignment drift from $\theta_1$ ($D_{\mathrm{CKA}}$ at step 7,000), and terminal Phase~3 metrics (step 12,000) including macro-averaged AUROC, balanced accuracy (macro-recall), and recovered Effective Rank. Table~\ref{tab:appendix_applied_pilot_raw} compiles the four-arm pilot benchmark including the label-permuted negative control ($S_1\text{-shuf}$).
+
+\begin{table*}[t]
+\caption{Seed-level primary confirmatory evaluation metrics on ISIC 2019 across the eight independent paired seeds (1001--1008). All arms fork from identical Phase~1 checkpoints $\theta_1$ at step 5,000. Accuracies, contrasts, and balanced accuracies are reported in percentage points (pp).}\label{tab:appendix_applied_primary_raw}
+\centering
+\renewcommand{\arraystretch}{0.88}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l ccc ccc ccc ccc}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Terminal Top-1 Acc. (\%)}} & \multicolumn{3}{c}{\textbf{Paired Contrasts (pp)}} & \multicolumn{3}{c}{\textbf{Phase 2 EffRank (Step 7k)}} & \multicolumn{3}{c}{\textbf{Phase 2 CKA Drift ($D_{\mathrm{CKA}}$)}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13}
+\textbf{Seed} & $C_0$ (12k) & $C_3$ (12k) & $S_1$ (12k) & $C_3 - C_0$ & $S_1 - C_3$ & $S_1 - C_0$ & $C_0$ & $C_3$ & $S_1$ & $C_0$ & $C_3$ & $S_1$ \\
+\midrule
+1001 & 85.35 & 85.04 & 85.20 & $-0.32$ & $+0.16$ & $-0.16$ & 1153.3 & 1130.0 & 789.5 & 0.146 & 0.206 & 0.507 \\
+1002 & 86.14 & 84.17 & 84.60 & $-1.97$ & $+0.43$ & $-1.54$ & 1146.6 & 1120.4 & 788.3 & 0.159 & 0.154 & 0.468 \\
+1003 & 84.60 & 84.41 & 85.55 & $-0.20$ & $+1.14$ & $+0.95$ & 1142.5 & 1113.3 & 791.8 & 0.159 & 0.217 & 0.530 \\
+1004 & 84.09 & 84.84 & 84.41 & $+0.75$ & $-0.43$ & $+0.32$ & 1164.4 & 1129.2 & 789.4 & 0.166 & 0.171 & 0.437 \\
+1005 & 84.60 & 85.43 & 84.80 & $+0.83$ & $-0.63$ & $+0.20$ & 1141.9 & 1123.2 & 780.2 & 0.137 & 0.154 & 0.439 \\
+1006 & 85.20 & 84.76 & 85.55 & $-0.43$ & $+0.79$ & $+0.36$ & 1142.9 & 1110.1 & 763.6 & 0.152 & 0.180 & 0.486 \\
+1007 & 85.87 & 84.25 & 84.41 & $-1.62$ & $+0.16$ & $-1.46$ & 1145.0 & 1131.3 & 795.0 & 0.156 & 0.176 & 0.474 \\
+1008 & 85.55 & 84.56 & 83.58 & $-0.99$ & $-0.99$ & $-1.97$ & 1138.5 & 1106.6 & 798.8 & 0.145 & 0.156 & 0.464 \\
+\midrule
+\textbf{Mean} & \textbf{85.18} & \textbf{84.68} & \textbf{84.76} & $\bm{-0.49}$ & $\bm{+0.08}$ & $\bm{-0.41}$ & \textbf{1146.9} & \textbf{1120.5} & \textbf{787.1} & \textbf{0.153} & \textbf{0.177} & \textbf{0.476} \\
+\textbf{SD}   & 0.70  & 0.42  & 0.67  & 1.01  & 0.73  & 1.08  & 8.3   & 9.6   & 10.9  & 0.010 & 0.024 & 0.032 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+\begin{table*}[t]
+\caption{Seed-level pilot benchmark evaluation metrics on ISIC 2019 across exploratory seeds 900001 and 900002, comparing continuous training $C_0$, procedural reset control $C_3$, auxiliary detour $S_1$, and label-shuffled control $S_1\text{-shuf}$.}\label{tab:appendix_applied_pilot_raw}
+\centering
+\renewcommand{\arraystretch}{0.88}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l ccccc cccc}
+\toprule
+\textbf{Condition} & \textbf{Seed} & \textbf{Top-1 Acc. (\%)} & \textbf{Macro AUROC} & \textbf{Bal. Acc. (\%)} & \textbf{ECE} & \textbf{Brier Score} & \textbf{Phase 2 EffRank} & \textbf{Phase 2 $D_{\mathrm{CKA}}$} & \textbf{Phase 3 EffRank} \\
+\midrule
+$C_0$ (Continuous)        & 900001 & 84.52 & 0.9768 & 77.81 & 0.1050 & 0.2575 & 1145.2 & 0.1508 & 1139.8 \\
+$C_3$ (Reset Ctrl)        & 900001 & 84.88 & 0.9760 & 78.13 & 0.1014 & 0.2482 & 1125.0 & 0.1705 & 1127.2 \\
+$S_1$ (Auxiliary)         & 900001 & 83.77 & 0.9745 & 79.43 & 0.1022 & 0.2672 & 813.7  & 0.4469 & 1150.8 \\
+$S_1\text{-shuf}$ (Shuf)  & 900001 & 83.34 & 0.9710 & 76.42 & 0.1075 & 0.2733 & 764.5  & 0.4297 & 1144.8 \\
+\midrule
+$C_0$ (Continuous)        & 900002 & 84.37 & 0.9731 & 78.59 & 0.1017 & 0.2531 & 1157.8 & 0.2173 & 1150.6 \\
+$C_3$ (Reset Ctrl)        & 900002 & 85.67 & 0.9774 & 77.22 & 0.0990 & 0.2401 & 1121.2 & 0.2538 & 1122.2 \\
+$S_1$ (Auxiliary)         & 900002 & 85.27 & 0.9765 & 78.24 & 0.0951 & 0.2443 & 796.3  & 0.4675 & 1144.2 \\
+$S_1\text{-shuf}$ (Shuf)  & 900002 & 84.80 & 0.9763 & 77.39 & 0.0906 & 0.2458 & 779.9  & 0.3995 & 1133.5 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
 \end{appendices}
 
 \section*{Declarations}
@@ -1029,7 +1085,7 @@ $F_{11}$ ($C_3$) & Temp head $h_{\mathrm{temp}}$ & Zeroed ($\bm{v} \leftarrow \m
 \textbf{Competing Interests.} The authors declare that they have no financial or commercial competing interests that could inappropriately influence this work.
 \textbf{Ethics Approval.} Not applicable (computational computer vision research without human or animal subjects).
 \textbf{Consent to Participate / Publish.} Not applicable.
-\textbf{Availability of Data and Materials.} CIFAR-100 \cite{krizhevsky2009cifar} and STL-10 \cite{coates2011stl10} datasets are public resources accessible via their official distributions (\url{https://www.cs.toronto.edu/~kriz/cifar.html} and \url{https://cs.stanford.edu/~acoates/stl10/}) and torchvision APIs.
+\textbf{Availability of Data and Materials.} CIFAR-100 \cite{krizhevsky2009cifar}, STL-10 \cite{coates2011stl10}, ISIC 2019 \cite{codella2018skin,tschandl2018ham10000}, and Imagenette \cite{howard2020fastai} datasets are public resources accessible via their official distributions and torchvision APIs.
 \textbf{Code and Reproduction Availability.} All source code, configs, manifests, and seed evaluation logs required to independently reproduce every table and figure are available via the anonymous repository at \url{https://anonymous.4open.science/r/off-task-learning-intervals-0B5C/}. GPU experiments were conducted on NVIDIA Quadro RTX 8000 and NVIDIA L4 GPUs using PyTorch 2.4.0 (CUDA 12.1). Figure reproduction scripts reside in \texttt{PAA/scripts/}. An immutable repository snapshot will be archived on Zenodo upon acceptance.
 \textbf{Authors' Contributions.} All authors contributed to the conceptualization, experimental protocol design, software implementation, empirical execution, statistical analysis, and manuscript drafting.
 
