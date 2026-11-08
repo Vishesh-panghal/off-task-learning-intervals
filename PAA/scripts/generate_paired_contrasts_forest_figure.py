@@ -190,21 +190,32 @@ for patch, bin_left, bin_right in zip(patches_hist, bins[:-1], bins[1:]):
         patch.set_facecolor('#FADBD8')
         patch.set_edgecolor(C_ROSE)
 
-# Observed statistic line
-ax3.axvline(obs_stat, color=C_ROSE, linestyle='-', lw=2.0, zorder=5)
-ax3.axvline(-obs_stat, color=C_ROSE, linestyle=':', lw=1.5, zorder=5)
+# Observed statistic and symmetric two-tailed threshold lines
+line_top = 85000
+ax3.plot([obs_stat, obs_stat], [0, line_top], color=C_ROSE, linestyle='-', lw=2.0, zorder=5)
+ax3.plot([-obs_stat, -obs_stat], [0, line_top], color=C_ROSE, linestyle=':', lw=1.5, zorder=5)
 
-y_max = ax3.get_ylim()[1]
-ax3.annotate(f"Observed Difference\n{obs_stat:.2f} pp", xy=(obs_stat, y_max * 0.65), xytext=(-0.75, y_max * 0.82),
-             arrowprops=dict(arrowstyle="->", color=C_ROSE, lw=1.3), fontsize=7.5, fontweight='bold', color=C_ROSE, ha='center',
-             bbox=dict(boxstyle="round,pad=0.25", facecolor='white', edgecolor=C_ROSE, lw=1.0))
+# Direct tags positioned neatly above the reference lines
+ax3.text(obs_stat, line_top + 1800, f"Observed\n{obs_stat:.2f} pp",
+         ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_ROSE,
+         bbox=dict(boxstyle="round,pad=0.25", facecolor='#FDEDEC', edgecolor=C_ROSE, lw=1.0))
 
-# Results badge
-ax3.text(0.5, 0.94, f"Exact Permutation Test:\n1,048,576 Sign Permutations ($2^{{20}}$)\nExtreme Tails: {extreme_count:,}/1,048,576\nExact $p = {p_perm:.4f}$",
-         transform=ax3.transAxes, ha='center', va='top', fontsize=7.6, fontweight='bold', color=C_DARK,
-         bbox=dict(boxstyle="round,pad=0.4", facecolor='#FFFFFF', edgecolor='#1C2833', lw=1.2))
+ax3.text(-obs_stat, line_top + 1800, f"Two-Tailed\n+{abs(obs_stat):.2f} pp",
+         ha='center', va='bottom', fontsize=7.2, fontweight='bold', color='#922B21',
+         bbox=dict(boxstyle="round,pad=0.25", facecolor='#FFFFFF', edgecolor='#E6B0AA', lw=0.9, linestyle=':'))
 
-ax3.set_xlim(-1.2, 1.2)
+# Results badge positioned in dedicated upper headroom, completely clear of histogram bars
+badge_text = (
+    r"$\bf{Exact\ Permutation\ Test}\ (2^{20} = 1,048,576)$" + "\n"
+    f"Extreme Tails: {extreme_count:,}/1,048,576 | " + r"Exact $p = 0.0906$"
+)
+ax3.text(0.0, 108500, badge_text,
+         ha='center', va='top', fontsize=7.6, color=C_DARK,
+         bbox=dict(boxstyle='round,pad=0.42', facecolor='#F8F9FA', edgecolor='#2C3E50', lw=1.1, zorder=8))
+
+ax3.set_xlim(-1.25, 1.25)
+ax3.set_ylim(0, 114000)
+ax3.set_yticks([0, 20000, 40000, 60000, 80000, 100000])
 ax3.set_xlabel("Mean Paired Difference Under Null (pp)", fontsize=8.8, fontweight='bold', color=C_DARK)
 ax3.set_ylabel("Permutation Count", fontsize=8.8, fontweight='bold', color=C_DARK)
 ax3.set_title("(c) Exact Sign-Flip Permutation Null", fontsize=9.6, fontweight='bold', color=C_DARK, pad=10)
