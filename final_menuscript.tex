@@ -51,12 +51,13 @@
 
 \title[Disentangling Auxiliary Transfer from Procedural Resets]{Disentangling Auxiliary Data Transfer from Procedural Resets in Off-Task Learning Intervals}
 
-\author*[1]{\fnm{Vishesh}}\email{visheshpanghal12@gmail.com}
-\author[1]{\fnm{Lakhan}}\email{Lbhaskar@iujaipur.edu.in}
-\author[2]{\fnm{Shalini}}\email{shalini.pathak@jaipur.manipal.edu}
+\author*[1]{\fnm{Vishesh}}\email{pvt.panghal@gmail.com}
+\author[2]{\fnm{Lakhan}}\email{Lbhaskar@iujaipur.edu.in}
+\author[3]{\fnm{Shalini}}\email{shalini.pathak@jaipur.manipal.edu}
 
-\affil*[1]{\orgdiv{Department of Computer Science and Engineering}, \orgname{The ICFAI University}, \orgaddress{\city{Jaipur}, \state{Rajasthan}, \country{India}}}
-\affil[2]{\orgdiv{School of Computer Science and Engineering}, \orgname{Manipal University Jaipur}, \orgaddress{\city{Jaipur}, \state{Rajasthan}, \postcode{303007}, \country{India}}}
+\affil*[1]{\orgdiv{Department of Artificial Intelligence and Data Science}, \orgname{Poornima Institute of Engineering and Technology}, \orgaddress{\city{Jaipur}, \state{Rajasthan}, \country{India}}}
+\affil[2]{\orgdiv{Department of Computer Science and Engineering}, \orgname{The ICFAI University}, \orgaddress{\city{Jaipur}, \state{Rajasthan}, \country{India}}}
+\affil[3]{\orgdiv{School of Computer Science and Engineering}, \orgname{Manipal University Jaipur}, \orgaddress{\city{Jaipur}, \state{Rajasthan}, \postcode{303007}, \country{India}}}
 
 \abstract{
 Do temporary detours to auxiliary data improve generalization in deep vision models, or do the attendant procedural resets explain observed gains? We address this question across two distinct training regimes: (1)~from-scratch optimization on CIFAR-100 with a GroupNorm ResNet-18 and an intermediate STL-10 detour; and (2)~applied transfer fine-tuning of an ImageNet-pretrained ResNet-50 at $224 \times 224$ on clinical dermoscopy (ISIC 2019, 25,331 images) with an off-task natural image detour (Imagenette). In the from-scratch regime ($N = 20$ paired seeds), an auxiliary detour ($S_1$) averages 56.26\% test accuracy against 56.69\% for continuous training ($C_0$), a deficit of $-0.43$ percentage points (95\% paired $t$-interval [$-0.94$, $+0.07$] pp, $p = 0.090$), while an on-target reset control ($C_3$) reaches 56.29\% ($-0.40$ pp vs.\ $C_0$, $p = 0.269$). A $2 \times 2$ factorial decomposition ($N = 6$ seeds) shows that head substitution imposes a $-2.10$ pp penalty ($p = 0.004$), whereas momentum zeroing yields $+0.57$ pp ($p = 0.279$). In the applied fine-tuning regime ($N = 8$ paired seeds, 24 runs), off-task detours cause an immediate collapse in representation Effective Rank (from 1146.88 to 787.09 dimensions, $p < 10^{-11}$) and a 3.1-fold spike in linear CKA drift ($p < 10^{-7}$). However, subsequent target relearning completely repairs this geometric distortion, restoring feature dimensionality and yielding terminal statistical parity across all arms ($C_0$: 85.18\%, $C_3$: 84.68\%, $S_1$: 84.76\%; $p = 0.767$ for $S_1 - C_3$). These findings establish a unified principle: while off-task detours induce severe transient representational collapse, pretrained deep features exhibit strong asymptotic plasticity, meaning multi-phase training gains cannot be credited to inductive transfer without controlling for procedural optimizer resets and update budgets.
