@@ -228,10 +228,7 @@ We define four paired contrasts to adjudicate computational, exposure, procedura
     \Delta_{\mathrm{proc}} &\triangleq \mathrm{Acc}(C_3; 35\,\mathrm{k}) - \mathrm{Acc}(C_0; 35\,\mathrm{k}), \label{eq:delta_proc} \\
     \Delta_{\mathrm{aux}} &\triangleq \mathrm{Acc}(S_1; 35\,\mathrm{k}) - \mathrm{Acc}(C_3; 35\,\mathrm{k}). \label{eq:delta_aux}
 \end{align}
-\paragraph{Equal Total Updates ($\Delta_{\mathrm{total}}$):} Evaluates Hypothesis H1 under a matched computational ceiling. Both $S_1$ and $C_0$ consume 35,000 updates, but $S_1$ trades 5,000 target updates for auxiliary STL-10 steps.
-\paragraph{Equal Target Exposure ($\Delta_{\mathrm{target}}$):} Tests whether auxiliary learning provides supplementary transfer beyond target training, comparing $S_1$ (30k target updates) against $C_0$ at step 30,000.
-\paragraph{Procedural Reset Impact ($\Delta_{\mathrm{proc}}$):} Evaluates Hypothesis H2 by measuring the net effect of head substitution and momentum clearing on CIFAR-100 without auxiliary data.
-\paragraph{Auxiliary Data Contribution ($\Delta_{\mathrm{aux}}$):} Measures the marginal difference between auxiliary STL-10 data and target CIFAR-100 data under matched boundary operations.
+Equations~\eqref{eq:delta_total}--\eqref{eq:delta_aux} formalize the four comparative estimands: total computational budget parity ($\Delta_{\mathrm{total}}$), target exposure equivalence ($\Delta_{\mathrm{target}}$), procedural reset impact ($\Delta_{\mathrm{proc}}$), and marginal auxiliary transfer contribution ($\Delta_{\mathrm{aux}}$).
 
 \subsection{Mechanistic \texorpdfstring{$2 \times 2$}{2x2} Factorial Decomposition Protocol}\label{subsec:schedule_factorial}
 
@@ -249,6 +246,7 @@ This design defines four arms: $F_{00}$ (Continuous Baseline $C_0$), $F_{01}$ (M
 \end{align}
 All conditions within a seed block fork from the common checkpoint $\bm{\theta}_1$, preserving repeated-measures pairing across seeds.
 
+\clearpage
 \section{Experimental Setup and Analysis Protocol}\label{sec:protocol}
 
 \subsection{Datasets, Preprocessing, and Split Partitions}\label{subsec:protocol_datasets}
@@ -803,7 +801,7 @@ Table~\ref{tab:appendix_screening_raw} compiles individual run measurements acro
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c c c c}
 \toprule
-\textbf{Condition} & \textbf{Seed} & $P(\vtheta_1)$ & $P(\vtheta_2)$ & $F_B$ (pp) & \textbf{Probe (\%)} & \textbf{Final Val (\%)} & \textbf{Final Test (\%)} & $\Dcka$ & $\urec$ \\
+\textbf{Condition} & \textbf{Seed} & \textbf{Acc}($\vtheta_1$) & \textbf{Acc}($\vtheta_2$) & \textbf{Drop} (pp) & \textbf{Probe (\%)} & \textbf{Final Val (\%)} & \textbf{Final Test (\%)} & $\Dcka$ & $\urec$ \\
 \midrule
 \multirow{5}{*}{$B_0$ (Continuous Target)}
  & 42 & $53.64$ & --- & --- & --- & $57.38$ & $56.69$ & --- & --- \\
@@ -895,7 +893,7 @@ Clean Reset ($B_1$)       & 10 & $+0.75$ & [$-0.99$, $+2.46$] & $0.4337$ & $+0.2
 STL-10 Transfer ($B_4$)   & 10 & $+0.76$ & [$-0.38$, $+1.91$] & $0.2491$ & $+0.39$ & $+1.57$ & [$+0.62$, $+2.51$] & $0.0129$ & $+0.98$ & $+0.44$ & [$-0.93$, $+1.81$] & [$-0.63$, $+1.61$] \\
 Gaussian Noise ($B_7$)    & 10 & $-2.99$ & [$-4.67$, $-1.55$] & $0.0059$ & $-1.13$ & $-2.18$ & [$-3.73$, $-0.61$] & $0.0276$ & $-0.83$ & $-2.81$ & [$-4.80$, $-0.82$] & [$-4.56$, $-1.22$] \\
 \midrule
-\multicolumn{13}{l}{\textit{Decisive Paired Contrast (Auxiliary Transfer vs. Clean Optimizer Reset):}} \\
+\multicolumn{13}{l}{\textbf{Paired Contrast: Auxiliary Transfer ($B_4$) vs. Clean Optimizer Reset ($B_1$)}} \\
 $\bm{B_4 - B_1}$          & 10 & $+0.00$ & [$-1.04$, $+1.22$] & $0.9949$ & $+0.00$ & --- & --- & --- & --- & $\bm{-0.53}$ & [$\bm{-1.74}$, $\bm{+0.68}$] & [$\bm{-1.48}$, $\bm{+0.52}$] \\
 \bottomrule
 \end{tabular}%
@@ -909,7 +907,7 @@ $\bm{B_4 - B_1}$          & 10 & $+0.00$ & [$-1.04$, $+1.22$] & $0.9949$ & $+0.0
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c c c c}
 \toprule
-\textbf{Condition} & \textbf{Seed} & $P(\vtheta_1)$ & $P(\vtheta_2)$ & $\mathrm{Probe}(\vtheta_2)$ & $\mathrm{Val}(\vtheta_3)$ & $\mathrm{Test}(\vtheta_3)$ & $\mathrm{Probe}(\vtheta_3)$ & $\mathrm{Rank}(\vtheta_2)$ & $\mathrm{Rank}(\vtheta_3)$ \\
+\textbf{Condition} & \textbf{Seed} & \textbf{Acc}($\vtheta_1$) & \textbf{Acc}($\vtheta_2$) & \textbf{Probe}($\vtheta_2$) & \textbf{Val}($\vtheta_3$) & \textbf{Test}($\vtheta_3$) & \textbf{Probe}($\vtheta_3$) & \textbf{EffRank}($\vtheta_2$) & \textbf{EffRank}($\vtheta_3$) \\
 \midrule
 \multirow{10}{*}{$B_0$ (Continuous)}
  & 1001 & $51.90$ & --- & --- & $56.30$ & $55.80$ & $64.12$ & --- & $170.4$ \\
@@ -963,6 +961,7 @@ $\bm{B_4 - B_1}$          & 10 & $+0.00$ & [$-1.04$, $+1.22$] & $0.9949$ & $+0.0
 }
 \end{table*}
 
+\clearpage
 \section{Compact Vision Transformer (CViT) Seed-Level Cross-Validation}\label{sec:appendix_vit}
 
 Table~\ref{tab:appendix_vit_raw} lists per-seed metrics for the Compact Vision Transformer evaluation (CViT; $\approx 1.82\mathrm{M}$ parameters) across five independent seeds (seeds 3001--3005; 15 runs total) under conditions $B_0, B_1, B_4$.
@@ -974,7 +973,7 @@ Table~\ref{tab:appendix_vit_raw} lists per-seed metrics for the Compact Vision T
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c c c c c c}
 \toprule
-\textbf{Condition} & \textbf{Seed} & $P(\vtheta_1)$ & $P(\vtheta_2)$ & $\mathrm{Probe}(\vtheta_2)$ & $\mathrm{Val}(\vtheta_3)$ & $\mathrm{Test}(\vtheta_3)$ & $\mathrm{Probe}(\vtheta_3)$ & $\mathrm{Rank}(\vtheta_2)$ & $\mathrm{Rank}(\vtheta_3)$ \\
+\textbf{Condition} & \textbf{Seed} & \textbf{Acc}($\vtheta_1$) & \textbf{Acc}($\vtheta_2$) & \textbf{Probe}($\vtheta_2$) & \textbf{Val}($\vtheta_3$) & \textbf{Test}($\vtheta_3$) & \textbf{Probe}($\vtheta_3$) & \textbf{EffRank}($\vtheta_2$) & \textbf{EffRank}($\vtheta_3$) \\
 \midrule
 \multirow{5}{*}{$B_0$ (Continuous)}
  & 3001 & $42.44$ & --- & --- & $44.62$ & $45.43$ & $47.78$ & --- & $164.6$ \\
@@ -1001,6 +1000,7 @@ Table~\ref{tab:appendix_vit_raw} lists per-seed metrics for the Compact Vision T
 }
 \end{table*}
 
+\clearpage
 \section{Seed-Level Data for the \texorpdfstring{$2 \times 2$}{2x2} Factorial Decomposition}\label{sec:appendix_factorial}
 
 Table~\ref{tab:appendix_factorial_raw} lists seed-level test classification accuracies across the six paired seeds ($s \in \{920001, \dots, 920006\}$) evaluated in the $2 \times 2$ factorial decomposition on CIFAR-100 under matched computational budgets ($35{,}000$ updates on GroupNorm ResNet-18). All arms fork from identical Phase 1 checkpoints $\theta_1^{(s)}$ at step 15,000. Specifically, $F_{00}$ tracks continuous target training ($C_0$), $F_{01}$ retains the original classification head while clearing optimizer momentum buffers ($\bm{v} \leftarrow \mathbf{0}$) at boundary updates, $F_{10}$ replaces the head with a newly initialized projection while preserving momentum states, and $F_{11}$ executes both interventions simultaneously, matching the on-target reset control ($C_3$).
@@ -1008,26 +1008,27 @@ Table~\ref{tab:appendix_factorial_raw} lists seed-level test classification accu
 \begin{table*}[t]
 \caption{Seed-level test classification accuracies (\%) on CIFAR-100 across the six paired seeds (920001--920006) for the $2 \times 2$ factorial decomposition arms, alongside marginal effects and repeated-measures ANOVA statistics.}\label{tab:appendix_factorial_raw}
 \centering
-\renewcommand{\arraystretch}{0.88}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{l c c c c c c c c c}
+\small
+\begin{tabular}{l l l cccccc c}
 \toprule
-\textbf{Condition} & \textbf{Head Policy ($h$)} & \textbf{Momentum Policy ($m$)} & \textbf{Seed 920001} & \textbf{Seed 920002} & \textbf{Seed 920003} & \textbf{Seed 920004} & \textbf{Seed 920005} & \textbf{Seed 920006} & \textbf{Mean $\pm$ SD} \\
+\textbf{Arm} & \textbf{Head Policy ($h$)} & \textbf{Momentum Policy ($m$)} & \textbf{Seed 1} & \textbf{Seed 2} & \textbf{Seed 3} & \textbf{Seed 4} & \textbf{Seed 5} & \textbf{Seed 6} & \textbf{Mean $\pm$ SD} \\
 \midrule
-$F_{00}$ ($C_0$) & Retained target $h_A$ & Continuous carryover & $55.38$ & $57.19$ & $57.98$ & $55.85$ & $56.52$ & $55.01$ & $56.32 \pm 1.13$ \\
-$F_{01}$         & Retained target $h_A$ & Zeroed ($\bm{v} \leftarrow \mathbf{0}$) & $57.77$ & $56.95$ & $57.59$ & $55.79$ & $57.32$ & $55.86$ & $56.88 \pm 0.86$ \\
-$F_{10}$         & Temp head $h_{\mathrm{temp}}$ & Continuous carryover & $55.47$ & $54.01$ & $55.84$ & $52.73$ & $53.87$ & $53.34$ & $54.21 \pm 1.21$ \\
-$F_{11}$ ($C_3$) & Temp head $h_{\mathrm{temp}}$ & Zeroed ($\bm{v} \leftarrow \mathbf{0}$) & $56.71$ & $54.13$ & $53.67$ & $53.40$ & $55.97$ & $54.86$ & $54.79 \pm 1.32$ \\
+$F_{00}$ ($C_0$) & Retained target $h_A$ & Continuous carryover & 55.38 & 57.19 & 57.98 & 55.85 & 56.52 & 55.01 & $56.32 \pm 1.13$ \\
+$F_{01}$         & Retained target $h_A$ & Zeroed ($\bm{v} \leftarrow \mathbf{0}$) & 57.77 & 56.95 & 57.59 & 55.79 & 57.32 & 55.86 & $56.88 \pm 0.86$ \\
+$F_{10}$         & Temp head $h_{\mathrm{temp}}$ & Continuous carryover & 55.47 & 54.01 & 55.84 & 52.73 & 53.87 & 53.34 & $54.21 \pm 1.21$ \\
+$F_{11}$ ($C_3$) & Temp head $h_{\mathrm{temp}}$ & Zeroed ($\bm{v} \leftarrow \mathbf{0}$) & 56.71 & 54.13 & 53.67 & 53.40 & 55.97 & 54.86 & $54.79 \pm 1.32$ \\
 \midrule
-\multicolumn{10}{l}{\textit{Repeated-Measures ANOVA and Marginal Contrast Estimates ($5$ degrees of freedom):}} \\
+\multicolumn{10}{l}{\textbf{Repeated-Measures ANOVA and Marginal Contrast Estimates ($5$ degrees of freedom):}} \\
 \multicolumn{3}{l}{Main effect of head substitution ($\Delta_{\mathrm{head}}$)} & \multicolumn{4}{c}{$-2.10$ pp ($95\%$ CI: [$-3.18$, $-1.02$] pp)} & \multicolumn{3}{c}{$F(1, 5) = 24.95, p = 0.004$} \\
 \multicolumn{3}{l}{Main effect of momentum clearing ($\Delta_{\mathrm{mom}}$)}   & \multicolumn{4}{c}{$+0.57$ pp ($95\%$ CI: [$-0.64$, $+1.77$] pp)} & \multicolumn{3}{c}{$F(1, 5) = 1.47, p = 0.279$} \\
 \multicolumn{3}{l}{Factorial interaction ($\Delta_{\mathrm{interaction}}$)}      & \multicolumn{4}{c}{$+0.02$ pp ($95\%$ CI: [$-1.25$, $+1.29$] pp)} & \multicolumn{3}{c}{$F(1, 5) = 0.002, p = 0.967$} \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular}
 \end{table*}
 
+\clearpage
+
+\clearpage
 \section{Seed-Level Data for the Applied Vision Fine-Tuning Cohort (ISIC 2019)}\label{sec:appendix_applied}
 
 Table~\ref{tab:appendix_applied_primary_raw} and Table~\ref{tab:appendix_applied_pilot_raw} compile complete seed-level diagnostic, representation, and classification measurements across both the primary confirmatory cohort ($N = 8$ paired seeds, $s \in \{1001, \dots, 1008\}$) and the pilot exploration cohort ($N = 2$ seeds, $s \in \{900001, 900002\}$) evaluated under Regime~2 on ISIC 2019 dermoscopy classification. All runs employ torchvision ImageNet-pretrained ResNet-50 backbones under the prespecified 12,000-update protocol ($u_1 = 5{,}000, u_B = 2{,}000, u_2 = 5{,}000$) with an initial learning rate of $\eta = 10^{-2}$ and batch size of $32$.
@@ -1086,6 +1087,7 @@ $S_1\text{-shuf}$ (Shuf)  & 900002 & 84.80 & 0.9763 & 77.39 & 0.0906 & 0.2458 & 
 
 \end{appendices}
 
+\clearpage
 \section*{Declarations}
 
 \noindent\textbf{Funding.} The authors declare that no external funds, grants, or other financial support were received during the preparation of this manuscript.
