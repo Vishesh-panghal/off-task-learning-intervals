@@ -49,7 +49,7 @@
 
 \begin{document}
 
-\title[Disentangling Auxiliary Transfer from Procedural Resets]{Disentangling Auxiliary Data Transfer from Procedural Resets in Off-Task Learning Intervals}
+\title[Transient Collapse and Asymptotic Plasticity]{Transient Collapse and Asymptotic Plasticity: How Procedural Resets Confound Auxiliary Transfer in Deep Vision}
 
 \author*[1]{\fnm{Vishesh} \sur{Panghal}}\email{pvt.panghal@gmail.com}
 \author[2]{\fnm{Lakhan Bhaskar} \sur{Kadel}}\email{Lbhaskar@iujaipur.edu.in}
@@ -261,11 +261,7 @@ The auxiliary domain, STL-10, provides 5{,}000 labeled images over 10 object cla
 
 \subsection{Network Architecture and Optimization Hyperparameters}\label{subsec:protocol_model}
 
-All experiments instantiate a modified ResNet-18 backbone \cite{he2016deep} adapted for $32 \times 32$ inputs.
-
-Standard Batch Normalization introduces running mean and variance buffers that drift unpredictably when switching between disparate task distributions. We eliminate this confound entirely by replacing all normalization layers with Group Normalization ($G = 32$ groups) \cite{wu2018groupnorm}. GroupNorm computes statistics independently per instance across channel groups. Activations thus remain strictly batch-independent and immune to running covariate shift.
-
-Adaptive average pooling condenses backbone features into a penultimate embedding $\bm{z} \in \mathbb{R}^{512}$. Classification heads attach directly to $\bm{z}$ as single linear transformations ($\bm{W}\bm{z} + \bm{b}$), projecting to $K = 100$ logits for CIFAR-100 or $K = 10$ logits for STL-10. Optimization uses mini-batch SGD with momentum $\mu = 0.9$, weight decay $5 \times 10^{-4}$, and mini-batch size $B = 128$. Most importantly, the learning rate remains constant at $\eta = 0.1$ across the entire 35{,}000-update budget. We deliberately avoid learning rate annealing: decaying step sizes would introduce temporal non-stationarity, masking whether accuracy shifts stem from schedule structure or learning rate decay.
+All experiments instantiate a modified ResNet-18 backbone \cite{he2016deep} adapted for $32 \times 32$ inputs, replacing standard batch normalization with Group Normalization ($G = 32$ groups) \cite{wu2018groupnorm} to guarantee sample-independent representations immune to running covariate shift across phase boundaries (Section~\ref{subsec:schedule_transitions}). Adaptive average pooling condenses backbone features into a penultimate embedding $\bm{z} \in \mathbb{R}^{512}$. Classification heads attach directly to $\bm{z}$ as single linear transformations ($\bm{W}\bm{z} + \bm{b}$), projecting to $K = 100$ logits for CIFAR-100 or $K = 10$ logits for STL-10. Optimization uses mini-batch SGD with momentum $\mu = 0.9$, weight decay $5 \times 10^{-4}$, and mini-batch size $B = 128$. Most importantly, the learning rate remains constant at $\eta = 0.1$ across the entire 35{,}000-update budget. We deliberately avoid learning rate annealing: decaying step sizes would introduce temporal non-stationarity, masking whether accuracy shifts stem from schedule structure or learning rate decay.
 
 \subsection{Diagnostic Representation Metrics}\label{subsec:protocol_diagnostics}
 
@@ -602,17 +598,11 @@ We employ a standard torchvision ResNet-50 initialized with public \texttt{IMAGE
 During phase transitions, Head A is frozen and its optimizer momentum buffers are stashed. Upon returning to Task A, Head A and its historical momentum state are restored, ensuring zero parameter corruption during the detour. Running statistics for all Batch Normalization layers are preserved continuously across phase boundaries to prevent artificial distributional shocks.
 
 \paragraph{Optimization and Update Budget:}
-Training is governed by an exact budget of 12,000 updates:
+Training is governed by an exact budget of 12,000 updates partitioned into three sequential phases:
 \begin{itemize}
-    \item \textbf{Phase 1} ($u_1 = 5{,}000$ updates): Optimization on Target Task A (ISIC 2019, $\mathrm{Head}_A$).
-    \item \textbf{Phase 2} ($u_B = 2{,}000$ updates): Arm-dependent intervention:
-    \begin{itemize}
-        \item \textbf{$C_0$}: Continuous optimization on Task A ($\mathrm{Head}_A$, intact momentum).
-        \item \textbf{$C_3$}: On-target reset control (Task A with fresh $\mathrm{Head}_{\mathrm{temp}}$ and flushed momentum).
-        \item \textbf{$S_1$}: Auxiliary detour on natural Imagenette ($\mathrm{Head}_B$, flushed momentum).
-        \item \textbf{$S_1\text{-shuf}$}: Auxiliary detour on label-shuffled Imagenette (permuted labels).
-    \end{itemize}
-    \item \textbf{Phase 3} ($u_2 = 5{,}000$ updates): Target Task A relearning with restored $\mathrm{Head}_A$.
+    \item \textbf{Phase 1 (Target Warmup, $u_1 = 5{,}000$ updates):} Initial optimization on Target Task A (ISIC 2019 dermoscopy) using linear classifier projection $\mathrm{Head}_A$.
+    \item \textbf{Phase 2 (Intervention Detour, $u_B = 2{,}000$ updates):} Arm-dependent boundary intervention: continuous optimization on Task A ($C_0$, intact $\mathrm{Head}_A$ and continuous momentum carryover); on-target procedural reset control ($C_3$, temporary head $\mathrm{Head}_{\mathrm{temp}}$, flushed momentum $\bm{v} \leftarrow \mathbf{0}$); auxiliary detour on natural Imagenette ($S_1$, auxiliary head $\mathrm{Head}_B$, flushed momentum); or label-shuffled Imagenette ($S_1\text{-shuf}$, permuted labels).
+    \item \textbf{Phase 3 (Target Relearning, $u_2 = 5{,}000$ updates):} Target Task A relearning with restored target $\mathrm{Head}_A$ and restored pre-detour optimizer momentum state.
 \end{itemize}
 Optimization uses SGD with momentum $0.9$, weight decay $10^{-4}$, batch size 64, Automatic Mixed Precision (AMP), and a 500-step linear warmup to a constant base learning rate $\eta = 0.01$. Diagnostic evaluations occur at $\theta_1$ (step 5,000), $\theta_2$ (step 7,000), $\theta_{\mathrm{10k}}$ (step 10,000, equal-target exposure comparator), and $\theta_3$ (step 12,000, terminal). Because of severe class imbalance, evaluations record Top-1 accuracy (\%), macro one-vs-rest AUROC, macro-balanced accuracy (\%), Expected Calibration Error (ECE), and Brier score.
 
