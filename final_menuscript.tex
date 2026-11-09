@@ -187,7 +187,9 @@ For the final $u_2 = 15{,}000$ steps (from step $20{,}000$ to $35{,}000$), all a
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/figure_edafnet_style_framework.pdf}
-\caption{\textbf{Overview of the controlled training schedules and evaluation protocol.} Three-phase schedule comparing continuous target training ($C_0$), on-target procedural reset control ($C_3$), and auxiliary detour ($S_1$) on CIFAR-100 and STL-10 under an equal total budget of 35k updates. Terminal test accuracies are evaluated across $N = 20$ paired random seeds (mean $\pm$ SD; Table~\ref{tab:seed_level_results}). Longitudinal representation metrics (frozen linear probe accuracy and Effective Rank) are evaluated across the $N = 6$ paired cohort at steps 15k, 20k, and 35k (Table~\ref{tab:representation_trajectories}), supporting confirmatory evaluation of Hypotheses H1, H2, and RQ3.}\label{fig:framework_architecture}\label{fig:method_schematic}
+\caption{\textbf{Overview of the controlled experimental protocol and schedule architecture across two empirical regimes.} 
+\textbf{Top: Regime~1 (From-Scratch Pretraining and Exploration on CIFAR-100 and STL-10, 35,000 updates):} Three-phase schedule comparing continuous target training ($C_0$), on-target procedural reset control ($C_3$), and auxiliary detour ($S_1$) using a GroupNorm ResNet-18 backbone ($d=512$). Evaluates terminal accuracies across $N = 20$ paired random seeds alongside longitudinal representation metrics (frozen linear probes and Effective Rank) at steps 15k ($\theta_1$), 20k ($\theta_2$), and 35k ($\theta_3$). 
+\textbf{Bottom: Regime~2 (Applied Vision Fine-Tuning in Clinical Dermoscopy on ISIC 2019 and Imagenette, 12,000 updates):} Pretrained transfer fine-tuning using an ImageNet-pretrained ResNet-50 ($d=2048$). Evaluates whether procedural reset shocks and detour effects persist in high-resolution, imbalanced medical diagnostics across continuous training ($C_0$), on-target reset ($C_3$), and natural detour ($S_1$).}\label{fig:framework_architecture}\label{fig:method_schematic}
 \end{figure*}
 
 \begin{table*}[t]
@@ -373,7 +375,7 @@ Hypothesis H2 posits that boundary procedural operations (swapping heads and zer
 
 Comparing bundled control $C_3$ with continuous training $C_0$ across all twenty seeds at step 35,000 yields an observed difference of $-0.4025$ pp ($s_d = 1.5807$ pp, $t(19) = -1.1388, p = 0.2690, p_{\mathrm{perm}} = 0.2751, 95\%$ CI: [$-1.14$, $+0.34$] pp). Because the estimation interval easily spans zero, \textbf{the twenty-seed data fail to reject the null hypothesis of bundled procedural invariance ($\Delta_{\mathrm{proc}} = 0$)}. At the aggregate package level, procedural interventions produce no statistically reliable net shift.
 
-Yet aggregate neutrality masks strong opposing forces. Our $2 \times 2$ factorial experiment on CIFAR-100 ($N = 6$ paired seeds; Table~\ref{tab:factorial_decomposition}) demonstrates that individual procedural components exert active, cancelling effects:
+Yet aggregate neutrality masks strong opposing forces. Our $2 \times 2$ factorial experiment on CIFAR-100 ($N = 6$ paired seeds; Table~\ref{tab:factorial_decomposition} and Figure~\ref{fig:factorial_decomposition}) demonstrates that individual procedural components exert active, cancelling effects:
 
 \begin{table*}[t]
 \caption{Empirical $2 \times 2$ factorial decomposition of procedural interventions on CIFAR-100 under equal total budget ($35{,}000$ updates across $N = 6$ paired seeds). Accuracies are mean percentages $\pm$ standard deviation; contrasts $\Delta$ denote paired differences relative to baseline $F_{00}$ ($C_0$). $95\%$ CIs denote paired Student's $t$-intervals ($5$ d.f.); $p$-values are two-sided. Individual seed-level metrics are cataloged in Appendix~\ref{sec:appendix_factorial}.}\label{tab:factorial_decomposition}
@@ -405,6 +407,14 @@ Conversely, zeroing momentum buffers ($\bm{v} \leftarrow \mathbf{0}$) shifts acc
 
 \paragraph{Decoupling Factorial Components from Bundled Outcomes (Hypothesis H2):}
 The six-seed factorial analysis and the twenty-seed confirmatory study answer different questions. In the factorial cohort, the opposing effects cancel out ($-2.10 + 0.57 = -1.53$ pp, matching $F_{11} - F_{00} = -1.53$ pp, $p = 0.133$). But this decomposition cannot be used to reject procedural invariance in the larger confirmatory cohort, where bundled control $C_3$ remains statistically indistinguishable from baseline $C_0$ ($-0.4025$ pp, $p = 0.2690$). Procedural resets cannot be dismissed as harmless overhead, nor can momentum clearing be assumed to compensate reliably for head substitution in wider populations.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/figure_factorial_decomposition.pdf}
+\caption{\textbf{Empirical $2 \times 2$ factorial decomposition of boundary procedural interventions on CIFAR-100} under matched total budget ($35{,}000$ updates across $N = 6$ paired seeds). 
+\textbf{(a) Interaction plot:} Mean terminal test accuracy ($\pm 95\%$ CI) across head policies (retained target head $h_A$ vs.\ newly initialized temporary head $h_{\mathrm{temp}}$) and momentum policies (continuous velocity carryover vs.\ flushed momentum $\bm{v} \leftarrow \mathbf{0}$). Strictly parallel trajectories visually confirm the absence of factorial interaction ($+0.02$ pp, $p = 0.967$). 
+\textbf{(b) Factorial marginal main effects forest plot:} Estimated effect sizes with 95\% parametric Student's $t$-intervals (outer whiskers) and 95\% percentile bootstrap intervals (inner bars; 10,000 resamples). Head substitution imposes a statistically significant $-2.10$ pp penalty ($p = 0.004$), whereas momentum clearing provides a $+0.57$ pp upward shift whose 95\% CI spans zero ($p = 0.279$).}\label{fig:factorial_decomposition}
+\end{figure*}
 
 \subsection{Longitudinal Representation Trajectory Dynamics}\label{subsec:results_representations}
 
@@ -679,7 +689,7 @@ All confidence intervals span zero, and all point estimates remain bounded withi
 While terminal task performance exhibits asymptotic parity, intermediate representation diagnostics on the fixed 2,000-image probe reveal dramatic geometric divergence during the auxiliary interval.
 
 \paragraph{Dimensionality Collapse During the Detour:}
-At the end of Phase 1 (step 5,000, $\theta_1$), all models share an identical feature manifold with an Effective Representation Rank of $1143.48 \pm 8.29$ dimensions (out of 2048). As illustrated in Figure~\ref{fig:applied_contrasts_forest_plot}c, at the end of Phase 2 (step 7,000, $\theta_2$), representation geometry diverges violently:
+At the end of Phase 1 (step 5,000, $\theta_1$), all models share an identical feature manifold with an Effective Representation Rank of $1143.48 \pm 8.29$ dimensions (out of 2048). As illustrated in Figure~\ref{fig:applied_contrasts_forest_plot}c and Figure~\ref{fig:applied_manifold_and_scree}a--b, at the end of Phase 2 (step 7,000, $\theta_2$), representation geometry diverges violently:
 \begin{itemize}
     \item Continuous training $C_0$ maintains an Effective Rank of $1146.88 \pm 8.29$ dimensions.
     \item On-target reset $C_3$ experiences a minor contraction to $1120.50 \pm 9.58$ dimensions.
@@ -688,12 +698,21 @@ At the end of Phase 1 (step 5,000, $\theta_1$), all models share an identical fe
 \end{itemize}
 
 \paragraph{Manifold Rotation and Representation Drift:}
-Linear CKA drift relative to $\theta_1$ corroborates this disruption. While continuous training $C_0$ drifts modestly along the target manifold ($D_{\mathrm{CKA}} = 0.1525 \pm 0.0095$) and reset control $C_3$ drifts slightly further ($0.1768 \pm 0.0238$), auxiliary detour $S_1$ exhibits a massive jump to $0.4756 \pm 0.0319$ ($t(7) = +27.6, p = 4.8 \times 10^{-8}$). Off-task gradients from natural images actively rotate the penultimate representation subspace away from the clinical dermoscopy manifold.
+Linear CKA drift relative to $\theta_1$ corroborates this disruption. While continuous training $C_0$ drifts modestly along the target manifold ($D_{\mathrm{CKA}} = 0.1525 \pm 0.0095$) and reset control $C_3$ drifts slightly further ($0.1768 \pm 0.0238$), auxiliary detour $S_1$ exhibits a massive jump to $0.4756 \pm 0.0319$ ($t(7) = +27.6, p = 4.8 \times 10^{-8}$). Off-task gradients from natural images actively rotate the penultimate representation subspace away from the clinical dermoscopy manifold, scattering coherent diagnostic lesion clusters into visual disorganization (Figure~\ref{fig:applied_manifold_and_scree}c--f).
 
 \paragraph{Asymptotic Plasticity and Relearning Recovery:}
 Despite this severe mid-training dimensional compression and subspace rotation, 5,000 updates of subsequent target fine-tuning in Phase 3 completely reverse the disruption. By step 12,000 ($\theta_3$), Effective Rank in $S_1$ expands back to $1139.79 \pm 7.08$ dimensions, matching continuous training $C_0$ ($1142.15 \pm 9.69$ dimensions; complete seed-level diagnostic data in Appendix~\ref{sec:appendix_applied}). 
 
 This structural recovery explains the terminal performance parity. Unlike from-scratch optimization (where early gradient trajectories permanently alter feature learning basins), pretrained deep representations possess high plasticity and well-conditioned basins of attraction. The network absorbs substantial geometric distortion during off-task excursions, but downstream fine-tuning washes out the perturbation, resulting in asymptotic statistical equivalence.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/figure_applied_manifold_and_scree.pdf}
+\caption{\textbf{Transient representation collapse and latent manifold dynamics in clinical dermoscopy} (Regime~2: ImageNet-pretrained ResNet-50 fine-tuned on ISIC 2019 with Imagenette detour). 
+\textbf{(a) Singular value spectrum (scree plot):} Normalized singular values ($p_k$, \% log scale) across eigenvalue indices $k \in [1, 150]$. At step 5k ($\theta_1$, blue), feature geometry is broad and isotropic ($\mathrm{EffRank} = 1148.7$). At step 7k ($\theta_2$, red), off-task detour training on natural images induces catastrophic spectral compression ($\mathrm{EffRank} \to 789.5$), concentrating energy into early singular vectors. By step 12k ($\theta_3$, green), subsequent target relearning completely flattens the spectrum back to full dimensionality ($\mathrm{EffRank} = 1152.0$), matching continuous control $C_0$ (purple dotted). 
+\textbf{(b) Cumulative spectral energy:} Cumulative variance explained vs.\ dimension $k$. Under detour shock ($S_1$, red), 80\% of representation variance collapses into early dimensions (vs.\ $\theta_1$ and $\theta_3$). 
+\textbf{(c--f) 2D t-SNE projections of 2,000 clinical test lesions} across the 8 diagnostic ISIC categories: (c) Structured clinical separation at $\theta_1$; (d) Catastrophic manifold rotation and cluster dispersion at $\theta_2$ on $S_1$; (e) Preserved, intact diagnostic manifolds under continuous training ($C_0$); (f) Complete structural snapback and diagnostic re-clustering at terminal relearning ($\theta_3$ on $S_1$).}\label{fig:applied_manifold_and_scree}
+\end{figure*}
 
 \section{Discussion and Limitations}\label{sec:discussion}
 

@@ -232,3 +232,4 @@ plt.close()
 
 print(f"✓ Saved Applied Contrasts PNG: {png_out} ({os.path.getsize(png_out)/1024:.1f} KB)")
 print(f"✓ Saved Applied Contrasts PDF: {pdf_out} ({os.path.getsize(pdf_out)/1024:.1f} KB)")
+

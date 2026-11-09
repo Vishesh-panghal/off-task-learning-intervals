@@ -157,3 +157,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     run_smoke_test(device=args.device, conditions=args.conditions, seeds=args.seeds)
+
