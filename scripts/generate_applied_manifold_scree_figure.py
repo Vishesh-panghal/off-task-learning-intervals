@@ -1,23 +1,41 @@
 #!/usr/bin/env python3
 """
-Generate publication-grade Figure: Transient Representation Collapse and Latent Manifold Dynamics
+Generate publication-grade Figure: Transient Representation Collapse and Latent Manifold Dynamics (Figure 7)
 for Applied Vision Transfer Fine-Tuning in Clinical Dermoscopy (ISIC 2019 / Imagenette).
 
 Visualizes:
-- Row 1: (a) Scree Plot / Singular Value Spectrum comparing theta1 (Target Warmup), theta2 (Detour Collapse), and theta3 (Recovery).
-         (b) Cumulative Spectral Energy Distribution demonstrating steep variance concentration during the detour.
-- Row 2: (c) 2D t-SNE projection of 2,000 clinical test lesions at theta1 (Initial target manifold).
-         (d) 2D t-SNE projection at theta2 under S1 detour (Catastrophic manifold scatter / rotational chaos).
-         (e) 2D t-SNE projection at theta2 under C0 continuous baseline (Stable intact diagnostic clusters).
-         (f) 2D t-SNE projection at theta3 under S1 recovery (Complete structural snapback and diagnostic re-clustering).
+- Row 1:
+  (a) Scree Plot / Singular Value Spectrum comparing theta1 (Target Warmup), theta2 (Detour Collapse),
+      theta2 (C0 Continuous Control), and theta3 (Recovery).
+  (b) Cumulative Spectral Energy Distribution demonstrating steep variance concentration during the detour.
+- Row 2:
+  (c) 2D t-SNE projection of 2,000 clinical test lesions at theta1 (Initial target manifold).
+  (d) 2D t-SNE projection at theta2 under S1 detour (Catastrophic manifold scatter / rotational chaos).
+  (e) 2D t-SNE projection at theta2 under C0 continuous baseline (Stable intact diagnostic clusters).
+  (f) 2D t-SNE projection at theta3 under S1 recovery (Complete structural snapback and diagnostic re-clustering).
+
+Refinements:
+1. Row 1 (Scree & Cumulative Plots):
+   - Repositioned the "Sharp Spectral Collapse" annotation in Panel (a) with ample arrow clearance.
+   - Relocated the "Dimensional Compression" callout in Panel (b) to the open upper-left quadrant (y=88),
+     ensuring that the text box flies cleanly above all four cumulative variance curves without obscuring data.
+2. Row 2 (t-SNE Manifold Projections):
+   - Expanded vertical headroom by 15% (y_min - 0.14*y_range, y_max + 0.16*y_range) across all four
+     t-SNE subplots. Ensures top and bottom badges float purely in open margins and never occlude any
+     of the 2,000 clinical lesion scatter points.
+3. Global Legend:
+   - Stabilized bottom legend at bbox_to_anchor=(0.5, 0.015) in positive figure coordinates, preventing
+     canvas clipping and ensuring clean vertical separation from Row 2 subplots.
 """
 
 import os
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'DejaVu Sans', 'sans-serif']
+plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'sans-serif']
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['mathtext.fontset'] = 'cm'
 
@@ -36,8 +54,10 @@ data = np.load(NPZ_PATH)
 C_BLUE = '#1F77B4'      # Continuous Target (C0) / Baseline theta1
 C_RED = '#D62728'       # Detour Collapse (S1 theta2)
 C_GREEN = '#2CA02C'     # Relearning Recovery (S1 theta3)
+C_PURPLE = '#8E44AD'    # C0 Continuous Control
 C_DARK = '#1C2833'
 C_GRAY = '#7F8C8D'
+C_LIGHT_GRAY = '#CBD5E1'
 C_MUTED = '#4A5568'
 
 # 8 Diagnostic Classes for ISIC 2019
@@ -103,7 +123,7 @@ ax_scree.plot(k_range, p1[:150] * 100, color=C_BLUE, lw=2.2, linestyle='-',
               label=rf"$\boldsymbol{{\theta}}_1$ Target Warmup (Step 5k; $\mathrm{{EffRank}} = {er1:.1f}$)")
 ax_scree.plot(k_range, p2[:150] * 100, color=C_RED, lw=2.4, linestyle='-',
               label=rf"$\boldsymbol{{\theta}}_2$ Detour Collapse on $S_1$ (Step 7k; $\mathrm{{EffRank}} = {er2:.1f}$)")
-ax_scree.plot(k_range, p_c0[:150] * 100, color='#8E44AD', lw=1.8, linestyle=':',
+ax_scree.plot(k_range, p_c0[:150] * 100, color=C_PURPLE, lw=1.8, linestyle=':',
               label=rf"$\boldsymbol{{\theta}}_2$ Continuous $C_0$ Control (Step 7k; $\mathrm{{EffRank}} = {er_c0:.1f}$)")
 ax_scree.plot(k_range, p3[:150] * 100, color=C_GREEN, lw=2.2, linestyle='--',
               label=rf"$\boldsymbol{{\theta}}_3$ Relearning Recovery on $S_1$ (Step 12k; $\mathrm{{EffRank}} = {er3:.1f}$)")
@@ -114,12 +134,12 @@ ax_scree.set_ylabel("Normalized Singular Energy ($p_k$, % log scale)", fontsize=
 ax_scree.set_title("(a) Singular Value Spectrum (Scree Plot): Transient Geometric Collapse",
                    fontsize=11.0, fontweight='bold', loc='left', pad=8)
 ax_scree.grid(True, linestyle=':', alpha=0.5, which='both')
-ax_scree.legend(loc='upper right', framealpha=0.95, fontsize=8.8)
+ax_scree.legend(loc='upper right', framealpha=0.95, fontsize=8.6, edgecolor=C_LIGHT_GRAY)
 
 # Annotate steep drop
 ax_scree.annotate("Sharp Spectral Collapse\n(Top singular vectors concentrate;\nEffRank drops by 359 dims)",
-                  xy=(12, p2[11]*100), xytext=(32, 0.45),
-                  fontsize=8.5, fontweight='bold', color=C_RED,
+                  xy=(12, p2[11]*100), xytext=(48, 0.44),
+                  fontsize=8.2, fontweight='bold', color=C_RED, ha='left',
                   arrowprops=dict(arrowstyle="->", color=C_RED, lw=1.4),
                   bbox=dict(boxstyle="round,pad=0.25", facecolor='#FDEDEC', edgecolor=C_RED, lw=0.9))
 
@@ -131,14 +151,16 @@ k_cum_range = np.arange(1, 1001)
 
 ax_cum.plot(k_cum_range, cum1[:1000] * 100, color=C_BLUE, lw=2.0, label=r"$\boldsymbol{\theta}_1$ Warmup (Step 5k)")
 ax_cum.plot(k_cum_range, cum2[:1000] * 100, color=C_RED, lw=2.4, label=r"$\boldsymbol{\theta}_2$ Detour Collapse ($S_1$)")
-ax_cum.plot(k_cum_range, cum_c0[:1000] * 100, color='#8E44AD', lw=1.8, linestyle=':', label=r"$\boldsymbol{\theta}_2$ Continuous Baseline ($C_0$)")
+ax_cum.plot(k_cum_range, cum_c0[:1000] * 100, color=C_PURPLE, lw=1.8, linestyle=':', label=r"$\boldsymbol{\theta}_2$ Continuous Baseline ($C_0$)")
 ax_cum.plot(k_cum_range, cum3[:1000] * 100, color=C_GREEN, lw=2.0, linestyle='--', label=r"$\boldsymbol{\theta}_3$ Recovery ($S_1$)")
 
 # Threshold lines for 80% and 90% energy
 ax_cum.axhline(80, color=C_GRAY, linestyle=':', lw=1.0)
 ax_cum.axhline(90, color=C_GRAY, linestyle=':', lw=1.0)
-ax_cum.text(980, 80.5, "80% Energy", ha='right', fontsize=8.0, color=C_GRAY, fontweight='bold')
-ax_cum.text(980, 90.5, "90% Energy", ha='right', fontsize=8.0, color=C_GRAY, fontweight='bold')
+ax_cum.text(25, 81.2, "80% Energy Threshold", ha='left', va='bottom', fontsize=8.0, color='#5D6D7E', fontweight='bold',
+            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='#CBD5E1', alpha=0.92, lw=0.8))
+ax_cum.text(25, 91.2, "90% Energy Threshold", ha='left', va='bottom', fontsize=8.0, color='#5D6D7E', fontweight='bold',
+            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='#CBD5E1', alpha=0.92, lw=0.8))
 
 # Find k for 80% energy
 k80_th1 = np.where(cum1 >= 0.80)[0][0] + 1
@@ -149,9 +171,10 @@ ax_cum.scatter([k80_th2], [80], color=C_RED, s=60, zorder=5)
 ax_cum.scatter([k80_th1], [80], color=C_BLUE, s=60, zorder=5)
 ax_cum.scatter([k80_th3], [80], color=C_GREEN, s=60, zorder=5)
 
-ax_cum.annotate(f"Collapse: 80% energy in {k80_th2} dims\n(vs. {k80_th1} in warmup, {k80_th3} in recovery)",
-                xy=(k80_th2, 80), xytext=(k80_th2 - 280, 60),
-                fontsize=8.5, fontweight='bold', color=C_RED,
+# Place annotation cleanly in upper-middle clear zone pointing to (k80_th2, 80)
+ax_cum.annotate(f"Dimensional Compression:\n80% energy in {k80_th2} dims on $S_1$\n(vs. {k80_th1} in warmup, {k80_th3} in recovery)",
+                xy=(k80_th2, 80), xytext=(450, 88),
+                fontsize=8.2, fontweight='bold', color=C_RED, ha='center',
                 arrowprops=dict(arrowstyle="->", color=C_RED, lw=1.4),
                 bbox=dict(boxstyle="round,pad=0.25", facecolor='#FDEDEC', edgecolor=C_RED, lw=0.9))
 
@@ -160,7 +183,7 @@ ax_cum.set_ylabel("Cumulative Variance Explained (%)", fontsize=10.5, fontweight
 ax_cum.set_title("(b) Cumulative Spectral Energy: Dimensional Compression and Re-expansion",
                  fontsize=11.0, fontweight='bold', loc='left', pad=8)
 ax_cum.grid(True, linestyle=':', alpha=0.5)
-ax_cum.legend(loc='lower right', framealpha=0.95, fontsize=8.8)
+ax_cum.legend(loc='lower right', framealpha=0.95, fontsize=8.6, edgecolor=C_LIGHT_GRAY)
 ax_cum.set_xlim(0, 1050)
 ax_cum.set_ylim(20, 102)
 
@@ -182,6 +205,15 @@ for g_pos, key, title_str, sub_arm, note_str in tsne_runs:
     ax_t = fig.add_subplot(g_pos)
     coords = data[key]
     
+    # 15% vertical headroom so badges never occlude scatter points
+    y_min, y_max = coords[:, 1].min(), coords[:, 1].max()
+    y_range = y_max - y_min
+    ax_t.set_ylim(y_min - 0.14 * y_range, y_max + 0.16 * y_range)
+    
+    x_min, x_max = coords[:, 0].min(), coords[:, 0].max()
+    x_range = x_max - x_min
+    ax_t.set_xlim(x_min - 0.05 * x_range, x_max + 0.05 * x_range)
+    
     # Plot scatter by class
     for c_idx in range(8):
         mask = (labels == c_idx)
@@ -192,10 +224,10 @@ for g_pos, key, title_str, sub_arm, note_str in tsne_runs:
     ax_t.set_title(title_str, fontsize=9.8, fontweight='bold', pad=6)
     ax_t.text(0.5, 0.96, sub_arm, transform=ax_t.transAxes, ha='center', va='top',
               fontsize=8.5, fontweight='bold', color=C_DARK,
-              bbox=dict(boxstyle="round,pad=0.18", facecolor='white', edgecolor='#D5D8DC', alpha=0.9))
+              bbox=dict(boxstyle="round,pad=0.2", facecolor='white', edgecolor='#CBD5E1', alpha=0.94, lw=0.8))
     ax_t.text(0.5, 0.04, note_str, transform=ax_t.transAxes, ha='center', va='bottom',
               fontsize=7.8, fontstyle='italic', color=C_MUTED,
-              bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='#E5E7E9', alpha=0.85))
+              bbox=dict(boxstyle="round,pad=0.18", facecolor='white', edgecolor='#CBD5E1', alpha=0.92, lw=0.8))
     
     ax_t.set_xticks([])
     ax_t.set_yticks([])
@@ -210,9 +242,9 @@ legend_elements = [
     for i in range(8)
 ]
 fig.legend(handles=legend_elements, loc='lower center', ncol=4,
-           bbox_to_anchor=(0.5, 0.01), frameon=True, framealpha=0.95,
+           bbox_to_anchor=(0.5, 0.015), frameon=True, framealpha=0.95,
            fontsize=8.5, title="ISIC 2019 Diagnostic Categories (2,000 Clinical Probe Lesions)",
-           title_fontsize=9.2)
+           title_fontsize=9.2, edgecolor=C_LIGHT_GRAY)
 
 pdf_out = os.path.join(FIGURES_DIR, "figure_applied_manifold_and_scree.pdf")
 png_out = os.path.join(FIGURES_DIR, "figure_applied_manifold_and_scree.png")
@@ -221,4 +253,3 @@ plt.savefig(png_out, bbox_inches='tight', dpi=300)
 plt.close()
 
 print(f"Generated Applied Manifold & Scree figure successfully:\n  {pdf_out}\n  {png_out}")
-

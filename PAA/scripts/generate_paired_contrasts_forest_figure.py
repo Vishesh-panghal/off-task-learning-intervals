@@ -1,23 +1,16 @@
 #!/usr/bin/env python3
 """
-Generate publication-grade Paired Contrasts & Inferential Sensitivity Figure
-for Pattern Analysis and Applications (PAA, Springer Nature).
-
-Visualizes Table 3 and Table 4 confirmatory statistical data:
-- Panel (a): Seed-Level Paired Slopes (N = 20 Seeds, C0 vs. S1)
-- Panel (b): Confirmatory Forest Plot across Parametric & Bootstrap Estimators
-- Panel (c): Exact 1,048,576-Point Sign-Flip Permutation Null Distribution
-
-Features:
-- Full N = 20 paired seeds from Table 3 (7 positive vs. 13 negative)
-- Dual CI whiskers: Parametric Student's t (95%) and Percentile Bootstrap (95%)
-- Exact combinatorial permutation histogram (2^20 = 1,048,576 outcomes, p = 0.0906)
-- High-contrast PAA palette matching Figures 1 & 2
-- Dual export: 300 DPI PNG + vector PDF
+Test Refinement of Figure 2 (Confirmatory Paired Contrasts & Inferential Sensitivity):
+- Fixes Panel B legend collision with Contrast 4 (+0.27 pp) by moving to upper right.
+- Fixes Panel B text intersection where the red zero line cut through "-0.03 pp".
+- Fixes Panel A annotation box collision with seed 6 slope line.
+- Harmonizes colors and fonts with Figure 1.
 """
 
 import os
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -26,17 +19,19 @@ plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'sans-serif']
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['mathtext.fontset'] = 'cm'
 
-FIGURES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../figures"))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+FIGURES_DIR = os.path.join(BASE_DIR, "figures")
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
-# Color Palette matching Figure 1
-C_BLUE = '#2980B9'      # C0 Continuous Target Baseline
-C_PURPLE = '#8E44AD'    # C3 Target Reset Control
-C_ORANGE = '#D35400'    # S1 Auxiliary STL-10 Interval
-C_GREEN = '#27AE60'     # Positive contrast / Success
-C_ROSE = '#C0392B'      # Negative contrast / Null
-C_DARK = '#1C2833'
-C_GRAY = '#7F8C8D'
+# Color Palette harmonized with Figure 1
+C_BLUE = '#1F77B4'      # C0 Continuous Target Baseline
+C_GREEN = '#2CA02C'     # C3 Target Reset Control / Positive
+C_RED = '#D62728'       # S1 Auxiliary STL-10 Interval / Negative
+C_PURPLE = '#7D3C98'    # Bootstrap CI
+C_DARK = '#0F172A'      # Slate 900
+C_TEXT = '#1E293B'      # Slate 800
+C_MUTED = '#475569'     # Slate 600
+C_LINE = '#94A3B8'      # Slate 400
 
 # Seed data from Table 3 (N = 20 Paired Seeds)
 seeds = [f"9200{i:02d}" for i in range(1, 21)]
@@ -61,10 +56,10 @@ mean_diff = np.mean(diffs_primary)  # -0.4325 pp
 
 # Table 4 Contrast Estimands (Two-line format for optimal spacing)
 contrasts = [
-    r"$S_1(35{\rm k}) - C_0(35{\rm k})$" + "\n(Primary)",
-    r"$S_1(35{\rm k}) - C_3(35{\rm k})$" + "\n(vs. Reset)",
-    r"$C_3(35{\rm k}) - C_0(35{\rm k})$" + "\n(Reset Cost)",
-    r"$S_1(35{\rm k}) - C_0(30{\rm k})$" + "\n(Matched Pre-P3)"
+    r"$S_1(35{\rm k}) - C_0(35{\rm k})$" + "\n(Primary Transfer)",
+    r"$S_1(35{\rm k}) - C_3(35{\rm k})$" + "\n(Detour vs. Reset)",
+    r"$C_3(35{\rm k}) - C_0(35{\rm k})$" + "\n(Procedural Cost)",
+    r"$S_1(35{\rm k}) - C_0(30{\rm k})$" + "\n(Matched Target)"
 ]
 mean_diffs = [-0.4325, -0.0300, -0.4025, +0.2660]
 t_ci_low = [-0.9390, -0.7618, -1.1424, -0.4691]
@@ -92,7 +87,7 @@ for i in range(len(seeds)):
     y1 = s1_35k[i]
     d = diffs_primary[i]
     is_pos = (d >= 0)
-    col = C_GREEN if is_pos else C_ROSE
+    col = C_GREEN if is_pos else C_RED
     
     # Paired slope line
     ax1.plot([x_c0, x_s1], [y0, y1], color=col, lw=1.2, alpha=0.55, zorder=3)
@@ -104,64 +99,67 @@ ax1.text(x_c0 - 0.05, mean_c0 + 0.35, f"Mean: {mean_c0:.2f}%", ha='right', va='b
 ax1.text(x_s1 + 0.05, mean_s1 - 0.35, f"Mean: {mean_s1:.2f}%\n({mean_diff:+.2f} pp)", ha='left', va='top', fontsize=8.2, fontweight='bold', color=C_DARK)
 
 ax1.set_xlim(-0.35, 1.45)
-ax1.set_ylim(51.0, 60.5)
+ax1.set_ylim(49.8, 60.5)  # Extended lower limit to give full headroom for annotation box
 ax1.set_xticks([x_c0, x_s1])
 ax1.set_xticklabels([r"Continuous Baseline $C_0$" + "\n(35k Updates)", r"Auxiliary Schedule $S_1$" + "\n(35k Updates)"], fontsize=8.2, fontweight='bold')
 ax1.set_ylabel("Terminal CIFAR-100 Test Accuracy (%)", fontsize=8.8, fontweight='bold', color=C_DARK)
 ax1.set_title("(a) Seed-Level Paired Slopes (N = 20 Seeds)", fontsize=9.6, fontweight='bold', color=C_DARK, pad=10)
-ax1.legend(loc='upper right', frameon=True, framealpha=0.92, fontsize=7.8, edgecolor='#BDC3C7')
-ax1.grid(True, linestyle=':', alpha=0.5, color='#BDC3C7', axis='y')
+ax1.legend(loc='upper right', frameon=True, framealpha=0.92, fontsize=7.8, edgecolor='#CBD5E1')
+ax1.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1', axis='y')
 
-# Annotations showing balanced variation
-ax1.text(0.5, 51.5, "Seed Variation (N = 20):\n7 Positive Seeds (+0.07 to +2.12 pp)\n13 Negative Seeds (-0.04 to -2.76 pp)\n$t(19) = -1.79, p = 0.090$",
-         ha='center', va='bottom', fontsize=7.5, color='#2C3E50',
-         bbox=dict(boxstyle="round,pad=0.4", facecolor='#F8F9F9', edgecolor='#BDC3C7', lw=1.0))
+# Annotations showing balanced variation positioned completely below the lowest slope line (min = 52.25)
+ax1.text(0.5, 50.1, "Seed Variation (N = 20):\n7 Positive Seeds (+0.07 to +2.12 pp)\n13 Negative Seeds (-0.04 to -2.76 pp)\n$t(19) = -1.79, p = 0.090$",
+         ha='center', va='bottom', fontsize=7.4, color='#1E293B',
+         bbox=dict(boxstyle="round,pad=0.35", facecolor='#F8FAFC', edgecolor='#CBD5E1', lw=1.0))
 
 # =========================================================================
 # PANEL B: Confirmatory Forest Plot across Parametric & Bootstrap Estimators
 # =========================================================================
-y_pos = np.arange(len(contrasts))[::-1]  # Top to bottom
+y_pos = np.arange(len(contrasts))[::-1]  # Top to bottom: 3, 2, 1, 0
 
-# Zero reference line
-ax2.axvline(0.0, color=C_ROSE, linestyle='--', lw=1.3, zorder=1)
-ax2.axvspan(-0.5, 0.5, facecolor='#EAFAF1', alpha=0.35, zorder=0)  # Shaded bounds
+# Zero reference line and practical equivalence region
+ax2.axvline(0.0, color=C_RED, linestyle='--', lw=1.3, zorder=1)
+ax2.axvspan(-0.5, 0.5, facecolor='#EAFAF1', alpha=0.40, zorder=0)
 
 for i, y in enumerate(y_pos):
     m = mean_diffs[i]
     t_lo, t_hi = t_ci_low[i], t_ci_high[i]
     b_lo, b_hi = boot_ci_low[i], boot_ci_high[i]
     
-    col = C_BLUE if i == 0 else C_GRAY
-    point_col = C_DARK if i == 0 else C_GRAY
+    is_primary = (i == 0)
+    col = C_BLUE if is_primary else C_MUTED
+    point_col = C_DARK if is_primary else C_MUTED
+    bar_lw = 2.4 if is_primary else 1.8
     
     # 1. Parametric Student's t 95% CI (Thinner outer bar with caps)
-    ax2.plot([t_lo, t_hi], [y + 0.08, y + 0.08], color=col, lw=2.0, zorder=3)
-    ax2.plot([t_lo, t_lo], [y + 0.02, y + 0.14], color=col, lw=2.0, zorder=3)
-    ax2.plot([t_hi, t_hi], [y + 0.02, y + 0.14], color=col, lw=2.0, zorder=3)
+    ax2.plot([t_lo, t_hi], [y + 0.08, y + 0.08], color=col, lw=bar_lw, zorder=3)
+    ax2.plot([t_lo, t_lo], [y + 0.01, y + 0.15], color=col, lw=bar_lw, zorder=3)
+    ax2.plot([t_hi, t_hi], [y + 0.01, y + 0.15], color=col, lw=bar_lw, zorder=3)
     
     # 2. Bootstrap 95% CI (Thicker inner bar)
-    ax2.plot([b_lo, b_hi], [y - 0.08, y - 0.08], color=C_PURPLE, lw=3.0, alpha=0.85, zorder=3)
+    ax2.plot([b_lo, b_hi], [y - 0.08, y - 0.08], color=C_PURPLE, lw=3.2, alpha=0.85, zorder=3)
     
     # Point estimate marker
-    ax2.scatter(m, y, color=point_col, s=55, zorder=5)
+    ax2.scatter(m, y, color=point_col, s=60, zorder=5)
     
-    # Text label for point estimate & CI
-    sign_m = f"+{m:.2f}" if m > 0 else f"{m:.2f}"
-    ax2.text(m, y + 0.22, f"{sign_m} pp", ha='center', va='bottom', fontsize=7.6, fontweight='bold', color=C_DARK)
+    # Text label for point estimate with protective white background badge to avoid zero-line clash
+    sign_m = f"{m:+.2f} pp" if m != 0 else "0.00 pp"
+    ax2.text(m, y + 0.23, sign_m, ha='center', va='bottom', fontsize=7.6, fontweight='bold', color=C_DARK,
+             bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='none', alpha=0.92, zorder=4))
 
 ax2.set_yticks(y_pos)
 ax2.set_yticklabels(contrasts, fontsize=8.0, fontweight='bold')
 ax2.set_xlim(-1.6, 1.4)
-ax2.set_ylim(-0.6, 3.8)
+ax2.set_ylim(-0.7, 4.0)  # Generous headroom for legend in upper right
 ax2.set_xlabel("Paired Difference in Terminal Test Accuracy (pp)", fontsize=8.8, fontweight='bold', color=C_DARK)
 ax2.set_title("(b) Confirmatory Forest Plot & Inferential Sensitivity", fontsize=9.6, fontweight='bold', color=C_DARK, pad=10)
-ax2.grid(True, linestyle=':', alpha=0.5, color='#BDC3C7')
+ax2.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1')
 
-# Custom Legend for Estimators
-line_t = plt.Line2D([0], [0], color=C_BLUE, lw=2.0, label="Parametric Student's t 95% CI")
-line_b = plt.Line2D([0], [0], color=C_PURPLE, lw=3.0, label="Percentile Bootstrap 95% CI (10k resamples)")
-line_zero = plt.Line2D([0], [0], color=C_ROSE, linestyle='--', lw=1.3, label="Null Effect Line (Zero Difference)")
-ax2.legend(handles=[line_t, line_b, line_zero], loc='lower right', frameon=True, framealpha=0.92, fontsize=7.5, edgecolor='#BDC3C7')
+# Custom Legend placed in UPPER RIGHT (completely clear of all data points and Contrast 4)
+line_t = plt.Line2D([0], [0], color=C_BLUE, lw=2.2, label="Parametric Student's t 95% CI")
+line_b = plt.Line2D([0], [0], color=C_PURPLE, lw=3.2, label="Percentile Bootstrap 95% CI (10k resamples)")
+line_zero = plt.Line2D([0], [0], color=C_RED, linestyle='--', lw=1.3, label="Null Effect Line (Zero Difference)")
+ax2.legend(handles=[line_t, line_b, line_zero], loc='upper right', frameon=True, framealpha=0.94, fontsize=7.4, edgecolor='#CBD5E1')
 
 # =========================================================================
 # PANEL C: Exact 1,048,576-Point Sign-Flip Permutation Null Distribution
@@ -188,17 +186,17 @@ n, bins, patches_hist = ax3.hist(perm_means, bins=35, edgecolor=C_DARK, linewidt
 for patch, bin_left, bin_right in zip(patches_hist, bins[:-1], bins[1:]):
     if bin_right <= -np.abs(obs_stat) or bin_left >= np.abs(obs_stat):
         patch.set_facecolor('#FADBD8')
-        patch.set_edgecolor(C_ROSE)
+        patch.set_edgecolor(C_RED)
 
 # Observed statistic and symmetric two-tailed threshold lines
 line_top = 85000
-ax3.plot([obs_stat, obs_stat], [0, line_top], color=C_ROSE, linestyle='-', lw=2.0, zorder=5)
-ax3.plot([-obs_stat, -obs_stat], [0, line_top], color=C_ROSE, linestyle=':', lw=1.5, zorder=5)
+ax3.plot([obs_stat, obs_stat], [0, line_top], color=C_RED, linestyle='-', lw=2.0, zorder=5)
+ax3.plot([-obs_stat, -obs_stat], [0, line_top], color=C_RED, linestyle=':', lw=1.5, zorder=5)
 
 # Direct tags positioned neatly above the reference lines
 ax3.text(obs_stat, line_top + 1800, f"Observed\n{obs_stat:.2f} pp",
-         ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_ROSE,
-         bbox=dict(boxstyle="round,pad=0.25", facecolor='#FDEDEC', edgecolor=C_ROSE, lw=1.0))
+         ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_RED,
+         bbox=dict(boxstyle="round,pad=0.25", facecolor='#FDEDEC', edgecolor=C_RED, lw=1.0))
 
 ax3.text(-obs_stat, line_top + 1800, f"Two-Tailed\n+{abs(obs_stat):.2f} pp",
          ha='center', va='bottom', fontsize=7.2, fontweight='bold', color='#922B21',
@@ -211,7 +209,7 @@ badge_text = (
 )
 ax3.text(0.0, 108500, badge_text,
          ha='center', va='top', fontsize=7.6, color=C_DARK,
-         bbox=dict(boxstyle='round,pad=0.42', facecolor='#F8F9FA', edgecolor='#2C3E50', lw=1.1, zorder=8))
+         bbox=dict(boxstyle='round,pad=0.42', facecolor='#F8FAFC', edgecolor='#2C3E50', lw=1.1, zorder=8))
 
 ax3.set_xlim(-1.25, 1.25)
 ax3.set_ylim(0, 114000)
@@ -219,7 +217,7 @@ ax3.set_yticks([0, 20000, 40000, 60000, 80000, 100000])
 ax3.set_xlabel("Mean Paired Difference Under Null (pp)", fontsize=8.8, fontweight='bold', color=C_DARK)
 ax3.set_ylabel("Permutation Count", fontsize=8.8, fontweight='bold', color=C_DARK)
 ax3.set_title("(c) Exact Sign-Flip Permutation Null", fontsize=9.6, fontweight='bold', color=C_DARK, pad=10)
-ax3.grid(True, linestyle=':', alpha=0.5, color='#BDC3C7')
+ax3.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1')
 
 # Save figures
 png_out = os.path.join(FIGURES_DIR, "figure_paired_contrasts_forest_plot.png")
@@ -230,5 +228,5 @@ plt.savefig(png_out, dpi=300)
 plt.savefig(pdf_out)
 plt.close()
 
-print(f"✓ Saved 20-Seed Forest Plot PNG: {png_out} ({os.path.getsize(png_out)/1024:.1f} KB)")
-print(f"✓ Saved 20-Seed Forest Plot PDF: {pdf_out} ({os.path.getsize(pdf_out)/1024:.1f} KB)")
+print(f"✓ Saved Refined 20-Seed Forest Plot PNG: {png_out} ({os.path.getsize(png_out)/1024:.1f} KB)")
+print(f"✓ Saved Refined 20-Seed Forest Plot PDF: {pdf_out} ({os.path.getsize(pdf_out)/1024:.1f} KB)")
