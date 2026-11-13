@@ -4,10 +4,10 @@ Generate publication-grade Figure 1: Controlled Experimental Protocol and Schedu
 Displays both Regime 1 (From-Scratch CIFAR-100 / STL-10, 35k updates) and
 Regime 2 (Applied Transfer ISIC 2019 / Imagenette, 12k updates) as clean timelines.
 Designed at native 6.5-inch column width with generous padding and 1:1 publication typography:
-- Titles: 9.2 pt bold
+- Titles: 9.0 pt bold
 - Milestone markers: 8.8 pt bold
 - Phase labels: 7.8 pt bold
-- Arm labels: 6.9 pt bold (with balanced internal padding)
+- Arm labels: 6.9 pt bold
 - Arm details: 6.5 pt
 - Annotations: 6.8--7.2 pt
 """
@@ -53,10 +53,10 @@ def draw_regime(ax, y_base, box_h, title, budget_tag, task_a, task_b, arch_tag,
     )
     ax.add_patch(card)
 
-    # Title header line with clean breathing room
-    ax.text(3.4, y_base + box_h - 3.8, title, fontsize=9.2, fontweight="bold", color=C_DARK, va="center", zorder=3)
-    ax.text(96.6, y_base + box_h - 3.8, f"Budget: {budget_tag}  ({arch_tag})", ha="right", va="center",
-            fontsize=7.6, fontweight="bold", color=C_MUTED, zorder=3)
+    # Title header line placed at top with clear vertical clearance below
+    ax.text(3.4, y_base + box_h - 2.5, title, fontsize=9.0, fontweight="bold", color=C_DARK, va="center", zorder=3)
+    ax.text(96.6, y_base + box_h - 2.5, f"Budget: {budget_tag}  ({arch_tag})", ha="right", va="center",
+            fontsize=7.4, fontweight="bold", color=C_MUTED, zorder=3)
 
     # Horizontal coordinate anchors
     x_p1_s, x_p1_e = 3.4, 21.0
@@ -68,18 +68,15 @@ def draw_regime(ax, y_base, box_h, title, budget_tag, task_a, task_b, arch_tag,
     x_p3_s, x_p3_e = 80.0, 94.6
     x_th3 = 96.8
 
-    y_mid = y_base + 18.5
-    delta_y = 11.2
-    arm_h = 9.2
+    y_mid = y_base + 16.2
+    delta_y = 10.4
+    arm_h = 8.4
 
     y_c0 = y_mid + delta_y
     y_c3 = y_mid
     y_s1 = y_mid - delta_y
 
-    # Optical text alignment inside cards
-    dy_text = 0.0
-
-    # Phase 1 card with balanced vertical height and padding
+    # Phase 1 card
     p1 = patches.FancyBboxPatch((x_p1_s, y_mid - 7.5), (x_p1_e - x_p1_s), 15.0,
                                boxstyle="round,pad=0.2,rounding_size=0.8",
                                facecolor="#FFFFFF", edgecolor="#94A3B8", lw=0.8, zorder=2)
@@ -104,34 +101,34 @@ def draw_regime(ax, y_base, box_h, title, budget_tag, task_a, task_b, arch_tag,
     ax.plot([x_fork, x_p2_s], [y_mid, y_c3], color=C_GREEN, lw=1.2, zorder=3)
     ax.plot([x_fork, x_p2_s], [y_mid, y_s1], color=C_RED, lw=1.2, zorder=3)
 
-    # Phase 2 arms with arm_h=8.8 and generous internal and external padding
+    # Phase 2 arms with comfortable padding and separation
     # C0 Continuous
     r_c0 = patches.FancyBboxPatch((x_p2_s, y_c0 - arm_h/2.0), (x_p2_e - x_p2_s), arm_h,
                                  boxstyle="round,pad=0.2,rounding_size=0.8",
                                  facecolor="#EBF5FB", edgecolor=C_BLUE, lw=1.0, zorder=3)
     ax.add_patch(r_c0)
-    ax.text(x_p2_s + 2.2, y_c0 + dy_text, r"$\mathbf{C_0}$: Continuous Target", va="center", fontsize=6.9, fontweight="bold", color=C_BLUE, zorder=4)
-    ax.text(x_p2_e - 2.2, y_c0 + dy_text, r"Head $h_A$, cont $\mathbf{v}$", ha="right", va="center", fontsize=6.5, color=C_BLUE, zorder=4)
+    ax.text(x_p2_s + 2.2, y_c0, r"$\mathbf{C_0}$: Continuous Target", va="center", fontsize=6.9, fontweight="bold", color=C_BLUE, zorder=4)
+    ax.text(x_p2_e - 2.2, y_c0, r"Head $h_A$, cont $\mathbf{v}$", ha="right", va="center", fontsize=6.5, color=C_BLUE, zorder=4)
 
     # C3 Reset Control
     r_c3 = patches.FancyBboxPatch((x_p2_s, y_c3 - arm_h/2.0), (x_p2_e - x_p2_s), arm_h,
                                  boxstyle="round,pad=0.2,rounding_size=0.8",
                                  facecolor="#EAFAF1", edgecolor=C_GREEN, lw=1.0, zorder=3)
     ax.add_patch(r_c3)
-    ax.text(x_p2_s + 2.2, y_c3 + dy_text, r"$\mathbf{C_3}$: Procedural Reset", va="center", fontsize=6.9, fontweight="bold", color=C_GREEN, zorder=4)
-    ax.text(x_p2_e - 2.2, y_c3 + dy_text, r"Temp $h_{\mathrm{temp}}, \mathbf{v}\leftarrow\mathbf{0}$", ha="right", va="center", fontsize=6.5, color=C_GREEN, zorder=4)
+    ax.text(x_p2_s + 2.2, y_c3, r"$\mathbf{C_3}$: Procedural Reset", va="center", fontsize=6.9, fontweight="bold", color=C_GREEN, zorder=4)
+    ax.text(x_p2_e - 2.2, y_c3, r"Temp $h_{\mathrm{temp}}, \mathbf{v}\leftarrow\mathbf{0}$", ha="right", va="center", fontsize=6.5, color=C_GREEN, zorder=4)
 
     # S1 Auxiliary Detour
     r_s1 = patches.FancyBboxPatch((x_p2_s, y_s1 - arm_h/2.0), (x_p2_e - x_p2_s), arm_h,
                                  boxstyle="round,pad=0.2,rounding_size=0.8",
                                  facecolor="#FDEDEC", edgecolor=C_RED, lw=1.0, zorder=3)
     ax.add_patch(r_s1)
-    ax.text(x_p2_s + 2.2, y_s1 + dy_text, rf"$\mathbf{{S_1}}$: Detour ({task_b})", va="center", fontsize=6.9, fontweight="bold", color=C_RED, zorder=4)
-    ax.text(x_p2_e - 2.2, y_s1 + dy_text, r"Aux $h_B, \mathbf{v}\leftarrow\mathbf{0}$", ha="right", va="center", fontsize=6.5, color=C_RED, zorder=4)
+    ax.text(x_p2_s + 2.2, y_s1, rf"$\mathbf{{S_1}}$: Detour ({task_b})", va="center", fontsize=6.9, fontweight="bold", color=C_RED, zorder=4)
+    ax.text(x_p2_e - 2.2, y_s1, r"Aux $h_B, \mathbf{v}\leftarrow\mathbf{0}$", ha="right", va="center", fontsize=6.5, color=C_RED, zorder=4)
 
-    # Phase 2 span label with generous daylight above C0 box
-    ax.text((x_p2_s + x_p2_e)/2.0, y_base + 40.0, f"Phase 2: {ub} Intervention Window", ha="center", va="center",
-            fontsize=7.4, fontweight="bold", color=C_DARK, zorder=4)
+    # Phase 2 span label positioned with generous daylight from both title and C0 box
+    ax.text((x_p2_s + x_p2_e)/2.0, y_base + 35.0, f"Phase 2: {ub} Intervention Window", ha="center", va="center",
+            fontsize=7.2, fontweight="bold", color=C_DARK, zorder=4)
 
     # Convergence lines
     ax.plot([x_p2_e, x_conv], [y_c0, y_mid], color=C_BLUE, lw=1.2, zorder=3)
