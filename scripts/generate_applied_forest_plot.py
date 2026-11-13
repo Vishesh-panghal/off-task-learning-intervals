@@ -69,7 +69,7 @@ C_MUTED = '#475569'
 # MAIN MANUSCRIPT FIGURE 6: 2 Panels (Native 6.5 x 2.45 in)
 # =========================================================================
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 1.15), dpi=300,
-                               gridspec_kw={'width_ratios': [1.0, 1.25], 'wspace': 0.32})
+                               gridspec_kw={'width_ratios': [0.90, 1.35], 'wspace': 0.52})
 
 # --- Panel (a): Seed-Level Profiles ---
 x_c0, x_c3, x_s1 = 0.0, 1.0, 2.0
@@ -95,7 +95,7 @@ ax1.set_xticklabels([
     r"$\mathbf{C_3}$ Reset Ctrl" + "\n(Head Swap)",
     r"$\mathbf{S_1}$ Auxiliary" + "\n(2k Detour)"
 ], fontsize=7.8, fontweight='bold')
-ax1.set_ylabel("Terminal ISIC 2019 Acc. (%)", fontsize=8.8, fontweight='bold', color=C_DARK)
+ax1.set_ylabel("Terminal ISIC Acc. (%)", fontsize=8.8, fontweight='bold', color=C_DARK)
 ax1.set_title("(a) Seed-Level Paired Profiles (N = 8)", fontsize=9.5, fontweight='bold', color=C_DARK, pad=6)
 ax1.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1', axis='y')
 ax1.text(1.0, 83.2, r"All $|d| \leq 0.49$ pp, all $p > 0.20$", ha='center', va='bottom', fontsize=7.2, color=C_MUTED)
@@ -145,16 +145,16 @@ line_b = plt.Line2D([0], [0], color=C_PURPLE, lw=2.6, label="95% Bootstrap CI")
 line_z = plt.Line2D([0], [0], color=C_RED, linestyle='--', lw=1.1, label="Null (0 pp)")
 ax2.legend(handles=[line_t, line_b, line_z], loc='upper right', frameon=True, framealpha=0.92, fontsize=7.2, edgecolor='#CBD5E1')
 
-plt.subplots_adjust(left=0.08, right=0.98, top=0.86, bottom=0.24)
+plt.subplots_adjust(left=0.125, right=0.98, top=0.85, bottom=0.22)
 
 pdf_out = os.path.join(FIGURES_DIR, "figure_applied_contrasts_forest_plot.pdf")
 png_out = os.path.join(FIGURES_DIR, "figure_applied_contrasts_forest_plot.png")
-fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.02)
-fig.savefig(png_out, bbox_inches='tight', pad_inches=0.02, dpi=300)
+fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.06)
+fig.savefig(png_out, bbox_inches='tight', pad_inches=0.06, dpi=300)
 
 for d in [CLEAN_FIGURES_DIR]:
-    fig.savefig(os.path.join(d, "figure_applied_contrasts_forest_plot.pdf"), bbox_inches='tight', pad_inches=0.02)
-    fig.savefig(os.path.join(d, "figure_applied_contrasts_forest_plot.png"), bbox_inches='tight', pad_inches=0.02, dpi=300)
+    fig.savefig(os.path.join(d, "figure_applied_contrasts_forest_plot.pdf"), bbox_inches='tight', pad_inches=0.06)
+    fig.savefig(os.path.join(d, "figure_applied_contrasts_forest_plot.png"), bbox_inches='tight', pad_inches=0.06, dpi=300)
 
 plt.close(fig)
 print(f"Figure 6 successfully generated: {pdf_out}")
@@ -189,8 +189,8 @@ ax_s.legend(loc='lower left', fontsize=7.5)
 plt.subplots_adjust(left=0.14, right=0.96, top=0.88, bottom=0.18)
 
 supp_pdf = os.path.join(FIGURES_DIR, "figure_applied_effrank_longitudinal.pdf")
-fig_s.savefig(supp_pdf, bbox_inches='tight', pad_inches=0.02)
+fig_s.savefig(supp_pdf, bbox_inches='tight', pad_inches=0.06)
 for d in [CLEAN_FIGURES_DIR]:
-    fig_s.savefig(os.path.join(d, "figure_applied_effrank_longitudinal.pdf"), bbox_inches='tight', pad_inches=0.02)
+    fig_s.savefig(os.path.join(d, "figure_applied_effrank_longitudinal.pdf"), bbox_inches='tight', pad_inches=0.06)
 plt.close(fig_s)
 print(f"Supplementary Figure S2 generated: {supp_pdf}")
