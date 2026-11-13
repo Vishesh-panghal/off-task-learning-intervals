@@ -153,18 +153,18 @@ Table~\ref{tab:supp_screening_raw} lists seed-level measurements across the six 
  & 2026 & 52.92 & 5.54  & 47.38  & 20.48 & 57.22 & 57.72 & 0.6800 & 3000 \\
 \midrule
 \multirow{5}{*}{$B_5$ (SVHN)}
- & 42   & 53.64 & 0.88  & 52.76  & 13.92 & 55.08 & 54.71 & 0.7029 & 2200 \\
- & 123  & 54.94 & 0.74  & 54.20  & 12.80 & 54.40 & 54.85 & 0.7259 & 3800 \\
- & 456  & 52.78 & 0.96  & 51.82  & 13.20 & 54.68 & 54.89 & 0.7107 & 3400 \\
- & 789  & 51.14 & 0.76  & 50.38  & 13.48 & 55.52 & 55.20 & 0.7301 & 1800 \\
- & 2026 & 52.92 & 0.82  & 52.10  & 12.44 & 54.10 & 54.04 & 0.7196 & 2400 \\
+ & 42   & 53.64 & 2.90  & 50.74  & 6.80  & 56.78 & 56.10 & 0.9030 & 5800 \\
+ & 123  & 54.94 & 2.46  & 52.48  & 7.26  & 56.82 & 56.45 & 0.9160 & 9000 \\
+ & 456  & 52.78 & 2.66  & 50.12  & 6.70  & 54.58 & 56.64 & 0.9161 & 4500 \\
+ & 789  & 51.14 & 2.12  & 49.02  & 6.70  & 55.44 & 54.90 & 0.9115 & 4700 \\
+ & 2026 & 52.92 & 2.78  & 50.14  & 7.34  & 56.84 & 56.44 & 0.9119 & 5300 \\
 \midrule
 \multirow{5}{*}{$B_7$ (Gaussian Noise)}
- & 42   & 53.64 & 1.04  & 52.60  & 1.10  & 53.72 & 53.69 & 0.8856 & 4800 \\
- & 123  & 54.94 & 0.88  & 54.06  & 1.00  & 53.58 & 53.76 & 0.8845 & 5000 \\
- & 456  & 52.78 & 0.98  & 51.80  & 1.06  & 52.88 & 53.51 & 0.8860 & 5500 \\
- & 789  & 51.14 & 0.94  & 50.20  & 1.02  & 53.48 & 53.45 & 0.8855 & 4200 \\
- & 2026 & 52.92 & 0.94  & 51.98  & 1.10  & 53.12 & 53.56 & 0.8849 & 4600 \\
+ & 42   & 53.64 & 1.30  & 52.34  & 5.10  & 54.12 & 54.14 & 0.9323 & 7800 \\
+ & 123  & 54.94 & 1.20  & 53.74  & 4.78  & 51.04 & 51.26 & 0.9473 & 7800 \\
+ & 456  & 52.78 & 1.72  & 51.06  & 4.12  & 54.84 & 56.16 & 0.9510 & 4700 \\
+ & 789  & 51.14 & 1.66  & 49.48  & 4.06  & 55.66 & 56.04 & 0.9315 & 4000 \\
+ & 2026 & 52.92 & 1.34  & 51.58  & 4.48  & 52.26 & 53.76 & 0.9046 & 9600 \\
 \bottomrule
 \end{tabular}%
 }
@@ -183,8 +183,8 @@ $B_0$ (Continuous Target) & --- & --- & --- & $56.14 \pm 0.93$ & $56.51 \pm 0.52
 $B_1$ (On-Target Reset)   & $0.2198 \pm 0.0116$ & $-5.58 \pm 1.34$ & $-5.58 \pm 1.34$ & $56.53 \pm 1.20$ & $56.79 \pm 1.09$ & $0 \pm 0$ \\
 $B_3$ (CIFAR-10)          & $0.5732 \pm 0.0267$ & $45.20 \pm 2.65$ & $45.20 \pm 2.65$ & $56.06 \pm 1.77$ & $56.07 \pm 1.74$ & $2400 \pm 869$ \\
 $B_4$ (STL-10)            & $0.6549 \pm 0.0336$ & $46.18 \pm 1.74$ & $46.18 \pm 1.74$ & $56.84 \pm 1.63$ & $57.38 \pm 1.54$ & $2140 \pm 826$ \\
-$B_5$ (SVHN)              & $0.7178 \pm 0.0111$ & $52.25 \pm 1.38$ & $52.25 \pm 1.38$ & $54.76 \pm 0.53$ & $54.74 \pm 0.44$ & $2720 \pm 844$ \\
-$B_7$ (Gaussian Noise)    & $0.8853 \pm 0.0006$ & $52.09 \pm 1.39$ & $52.09 \pm 1.39$ & $53.36 \pm 0.35$ & $53.59 \pm 0.12$ & $4820 \pm 476$ \\
+$B_5$ (SVHN)              & $0.9117 \pm 0.0053$ & $50.50 \pm 1.27$ & $50.50 \pm 1.27$ & $56.09 \pm 1.06$ & $56.11 \pm 0.71$ & $5860 \pm 1828$ \\
+$B_7$ (Gaussian Noise)    & $0.9334 \pm 0.0183$ & $51.64 \pm 1.57$ & $51.64 \pm 1.57$ & $53.58 \pm 1.87$ & $54.27 \pm 1.87$ & $6780 \pm 2350$ \\
 \bottomrule
 \end{tabular}%
 }
@@ -374,7 +374,32 @@ $F_{11}$ ($C_3$) & Temp head $h_{\mathrm{temp}}$ & Zeroed ($\bm{v} \leftarrow \m
 \clearpage
 \section{Seed-Level Data for the Applied Vision Fine-Tuning Cohort (ISIC 2019)}\label{sec:supp_applied}
 
-Table~\ref{tab:supp_applied_primary_raw} compiles complete seed-level diagnostic, representation, and classification measurements across the primary confirmatory cohort ($N = 8$ paired seeds, $s \in \{1001, \dots, 1008\}$). Table~\ref{tab:supp_applied_pilot_raw} and Table~\ref{tab:supp_applied_pilot_summary} compile the exploratory pilot benchmark ($N = 2$ seeds, $s \in \{900001, 900002\}$).
+Table~\ref{tab:supp_applied_primary_raw} compiles complete seed-level diagnostic, representation, and classification measurements across the primary confirmatory cohort ($N = 8$ paired seeds, $s \in \{1001, \dots, 1008\}$). Table~\ref{tab:supp_applied_pilot_raw} and Table~\ref{tab:supp_applied_pilot_summary} compile the exploratory pilot benchmark ($N = 2$ seeds, $s \in \{900001, 900002\}$). Table~\ref{tab:supp_isic_class_split} documents the complete class distribution and partition methodology for the ISIC 2019 dataset.
+
+\subsection{ISIC 2019 Dataset Partitioning and Leakage Controls}\label{subsec:supp_isic_split}
+The ISIC 2019 dermoscopy dataset consists of 25,331 clinical images distributed across 8 diagnostic categories \cite{codella2018skin,tschandl2018ham10000}. To establish reproducible and leakage-free evaluation, images were partitioned into class-stratified train (80\%, 20,264 images), validation (10\%, 2,533 images), and held-out test (10\%, 2,534 images) partitions using deterministic random seed 42. Partition manifests were cryptographically sealed using SHA-256 hashes prior to running any fine-tuning experiments. The test partition was locked and evaluated strictly once at terminal checkpoint $\theta_3$. Internal representation trajectory tracking ($D_{\mathrm{CKA}}$ and Effective Rank) used a fixed, disjoint probe of 2,000 validation images sampled via seed 142. Table~\ref{tab:supp_isic_class_split} reports the exact sample breakdown per diagnostic category across partitions.
+
+\begin{table*}[!ht]
+\caption{Class-stratified partition distribution for the ISIC 2019 clinical dermoscopy dataset (25,331 images total; 8 diagnostic categories; seed 42).}\label{tab:supp_isic_class_split}
+\centering
+\small
+\begin{tabular}{ll cccc}
+\toprule
+\textbf{Category} & \textbf{Full Diagnostic Description} & \textbf{Train (80\%)} & \textbf{Val (10\%)} & \textbf{Test (10\%)} & \textbf{Total} \\
+\midrule
+MEL  & Melanoma & 3,618 & 452 & 452 & 4,522 \\
+NV   & Melanocytic Nevus & 10,300 & 1,288 & 1,287 & 12,875 \\
+BCC  & Basal Cell Carcinoma & 2,658 & 332 & 333 & 3,323 \\
+AK   & Actinic Keratosis & 694 & 87 & 86 & 867 \\
+BKL  & Benign Keratosis & 2,099 & 262 & 263 & 2,624 \\
+DF   & Dermatofibroma & 191 & 24 & 24 & 239 \\
+VASC & Vascular Lesion & 202 & 25 & 26 & 253 \\
+SCC  & Squamous Cell Carcinoma & 502 & 63 & 63 & 628 \\
+\midrule
+\textbf{Total} & \textbf{All Diagnostic Classes} & \textbf{20,264} & \textbf{2,533} & \textbf{2,534} & \textbf{25,331} \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
 \begin{table*}[!ht]
 \caption{Seed-level primary confirmatory evaluation metrics on ISIC 2019 across the eight independent paired seeds (1001--1008). All arms fork from identical Phase 1 checkpoints $\theta_1$ at step 5,000. Accuracies, contrasts, and balanced accuracies are reported in percentage points (pp).}\label{tab:supp_applied_primary_raw}

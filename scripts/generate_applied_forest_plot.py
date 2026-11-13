@@ -128,7 +128,7 @@ ax1.set_ylabel("Terminal ISIC 2019 Top-1 Accuracy (%)", fontsize=9.0, fontweight
 ax1.set_title("(a) Seed-Level Paired Profiles (N = 8 Seeds)", fontsize=10.0, fontweight='bold', color=C_DARK, pad=10)
 ax1.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1', axis='y')
 
-ax1.text(1.0, 83.15, "Pairwise Equivalence:\nAll pairwise contrasts |Δ| ≤ 0.49 pp\nAll p > 0.20 (No Detour Penalty)",
+ax1.text(1.0, 83.15, "No Detectable Difference:\nAll pairwise contrasts |Δ| ≤ 0.49 pp\nAll p > 0.20 (95% CIs span zero)",
          ha='center', va='bottom', fontsize=7.8, color='#2C3E50',
          bbox=dict(boxstyle="round,pad=0.35", facecolor='#F8F9F9', edgecolor=C_LIGHT_GRAY, lw=1.0), zorder=4)
 
@@ -217,7 +217,7 @@ ax3.annotate(r"$\mathbf{-359.8\ dims}$" + "\nCollapse ($p < 10^{-10}$)",
              bbox=dict(boxstyle='round,pad=0.28', facecolor='#FDEDEC', edgecolor=C_ROSE, lw=0.9), zorder=6)
 
 # Highlight complete recovery at Phase 3 (placed cleanly above milestone with shrinkB to avoid marker touch)
-ax3.annotate(r"$\mathbf{Complete\ Recovery}$" + "\n(Stat. Parity at 1140 dims)",
+ax3.annotate(r"$\mathbf{Capacity\ Recovery}$" + "\n(Rebounds to 1140 dims)",
              xy=(2, m_eff_s1[2]), xytext=(1.68, 1225),
              arrowprops=dict(facecolor=C_GREEN, edgecolor=C_GREEN, shrinkA=5, shrinkB=20, width=1.5, headwidth=5.5),
              fontsize=7.8, fontweight='bold', color=C_GREEN, ha='center',
