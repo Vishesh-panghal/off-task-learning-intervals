@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
 Generate publication-grade Figure 2: Confirmatory Paired Contrasts on CIFAR-100.
-Redesigned with native 6.5-inch width:
+Redesigned with native 6.5-inch width and comfortable vertical height (figsize 6.5 x 2.05 in):
 - Panel (a): Seed-Level Paired Profiles (N = 20 paired seeds).
 - Panel (b): Confirmatory Paired Contrasts with 95% t-intervals and bootstrap intervals.
 - Panel (c) (Permutation Null Distribution) exported as supplementary figure.
 
 Typography:
-- Panel titles: 9.0 pt bold
-- Axis labels: 8.4 pt bold
-- Tick labels: 7.2--7.6 pt bold
-- Legend & point tags: 7.0--7.2 pt
+- Panel titles: 9.2 pt bold
+- Axis labels: 8.6 pt bold
+- Tick labels: 7.4--7.8 pt bold
+- Legend & point tags: 7.2--7.4 pt
 """
 
 import os
@@ -70,9 +70,9 @@ boot_ci_low = [-0.8880, -0.6700, -1.1200, -0.4300]
 boot_ci_high = [+0.0200, +0.6700, +0.2400, +0.9200]
 
 # =========================================================================
-# MAIN MANUSCRIPT FIGURE 2: 2 Panels with generous horizontal separation
+# MAIN MANUSCRIPT FIGURE 2: 2 Panels with enhanced vertical height (+32%)
 # =========================================================================
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 1.70), dpi=300,
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.10), dpi=300,
                                gridspec_kw={'width_ratios': [0.90, 1.35], 'wspace': 0.52})
 
 # --- Panel (a): Seed-Level Paired Slopes ---
@@ -81,29 +81,29 @@ for i in range(len(seeds)):
     y0, y1 = c0_35k[i], s1_35k[i]
     d = diffs_primary[i]
     col = C_GREEN if d >= 0 else C_RED
-    ax1.plot([x_c0, x_s1], [y0, y1], color=col, lw=0.85, alpha=0.45, zorder=3)
-    ax1.scatter([x_c0, x_s1], [y0, y1], color=col, s=12, alpha=0.60, zorder=4)
+    ax1.plot([x_c0, x_s1], [y0, y1], color=col, lw=0.90, alpha=0.45, zorder=3)
+    ax1.scatter([x_c0, x_s1], [y0, y1], color=col, s=14, alpha=0.60, zorder=4)
 
 # Grand Mean Trajectory
-ax1.plot([x_c0, x_s1], [mean_c0, mean_s1], color=C_DARK, lw=2.2, marker='D', markersize=5.0, zorder=6,
+ax1.plot([x_c0, x_s1], [mean_c0, mean_s1], color=C_DARK, lw=2.4, marker='D', markersize=5.5, zorder=6,
          label=rf"Mean ($\Delta = {mean_diff:.2f}$ pp)")
-ax1.text(x_c0 - 0.04, mean_c0 + 0.35, f"{mean_c0:.2f}%", ha='right', va='bottom', fontsize=7.4, fontweight='bold', color=C_DARK)
-ax1.text(x_s1 + 0.04, mean_s1 - 0.35, f"{mean_s1:.2f}%\n({mean_diff:+.2f} pp)", ha='left', va='top', fontsize=7.4, fontweight='bold', color=C_DARK)
+ax1.text(x_c0 - 0.04, mean_c0 + 0.35, f"{mean_c0:.2f}%", ha='right', va='bottom', fontsize=7.6, fontweight='bold', color=C_DARK)
+ax1.text(x_s1 + 0.04, mean_s1 - 0.35, f"{mean_s1:.2f}%\n({mean_diff:+.2f} pp)", ha='left', va='top', fontsize=7.6, fontweight='bold', color=C_DARK)
 
 ax1.set_xlim(-0.35, 1.45)
 ax1.set_ylim(51.0, 60.5)
 ax1.set_xticks([x_c0, x_s1])
 ax1.set_xticklabels([r"$\mathbf{C_0}$ Continuous" + "\n(35k Updates)", r"$\mathbf{S_1}$ Auxiliary" + "\n(35k Updates)"],
-                    fontsize=7.6, fontweight='bold')
-ax1.set_ylabel("Terminal CIFAR-100 Acc. (%)", fontsize=8.4, fontweight='bold', color=C_DARK, labelpad=2.0)
-ax1.set_title("(a) Seed-Level Paired Profiles (N = 20)", fontsize=9.0, fontweight='bold', color=C_DARK, pad=5)
+                    fontsize=7.8, fontweight='bold')
+ax1.set_ylabel("Terminal CIFAR-100 Acc. (%)", fontsize=8.6, fontweight='bold', color=C_DARK, labelpad=2.0)
+ax1.set_title("(a) Seed-Level Paired Profiles (N = 20)", fontsize=9.2, fontweight='bold', color=C_DARK, pad=6)
 
 # Place legend in upper left to eliminate any possibility of collision with panel (b)
-ax1.legend(loc='upper left', frameon=True, framealpha=0.92, fontsize=7.0, edgecolor='#CBD5E1')
+ax1.legend(loc='upper left', frameon=True, framealpha=0.92, fontsize=7.2, edgecolor='#CBD5E1')
 ax1.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1', axis='y')
 
 # Subtle note on seed distribution
-ax1.text(0.5, 51.3, r"7 positive / 13 negative seeds ($p = 0.090$)", ha='center', va='bottom', fontsize=6.8, color=C_MUTED)
+ax1.text(0.5, 51.4, r"7 positive / 13 negative seeds ($p = 0.090$)", ha='center', va='bottom', fontsize=7.0, color=C_MUTED)
 
 # --- Panel (b): Confirmatory Contrasts Forest Plot ---
 y_pos = np.arange(len(contrasts))[::-1]
@@ -119,49 +119,49 @@ for i, y in enumerate(y_pos):
     pt_col = C_DARK if is_primary else C_MUTED
     
     # Parametric t CI (outer line with ticks)
-    ax2.plot([t_lo, t_hi], [y + 0.06, y + 0.06], color=col, lw=1.5, zorder=3)
-    ax2.plot([t_lo, t_lo], [y + 0.01, y + 0.11], color=col, lw=1.5, zorder=3)
-    ax2.plot([t_hi, t_hi], [y + 0.01, y + 0.11], color=col, lw=1.5, zorder=3)
+    ax2.plot([t_lo, t_hi], [y + 0.07, y + 0.07], color=col, lw=1.6, zorder=3)
+    ax2.plot([t_lo, t_lo], [y + 0.02, y + 0.12], color=col, lw=1.6, zorder=3)
+    ax2.plot([t_hi, t_hi], [y + 0.02, y + 0.12], color=col, lw=1.6, zorder=3)
     
     # Bootstrap CI (inner thicker line)
-    ax2.plot([b_lo, b_hi], [y - 0.06, y - 0.06], color=C_PURPLE, lw=2.4, alpha=0.85, zorder=3)
+    ax2.plot([b_lo, b_hi], [y - 0.07, y - 0.07], color=C_PURPLE, lw=2.6, alpha=0.85, zorder=3)
     
     # Point estimate
-    ax2.scatter(m, y, color=pt_col, s=32, zorder=5)
+    ax2.scatter(m, y, color=pt_col, s=36, zorder=5)
     
     # Direct number tag placed cleanly with ample legend clearance
     sign_m = f"{m:+.2f} pp" if m != 0 else "0.00 pp"
     if i == 1: # -0.03 pp: align right of point to preserve clear space before the legend
-        ax2.text(m - 0.08, y + 0.18, sign_m, ha='right', va='bottom', fontsize=7.2, fontweight='bold', color=C_DARK,
+        ax2.text(m - 0.08, y + 0.20, sign_m, ha='right', va='bottom', fontsize=7.4, fontweight='bold', color=C_DARK,
                  bbox=dict(boxstyle="round,pad=0.10", facecolor='white', edgecolor='none', alpha=0.90, zorder=4))
     else:
-        ax2.text(m, y + 0.18, sign_m, ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_DARK,
+        ax2.text(m, y + 0.20, sign_m, ha='center', va='bottom', fontsize=7.4, fontweight='bold', color=C_DARK,
                  bbox=dict(boxstyle="round,pad=0.10", facecolor='white', edgecolor='none', alpha=0.90, zorder=4))
 
 ax2.set_yticks(y_pos)
-ax2.set_yticklabels(contrasts, fontsize=7.2)
+ax2.set_yticklabels(contrasts, fontsize=7.4)
 ax2.set_xlim(-1.4, 1.35)
 ax2.set_ylim(-0.6, 3.8)
-ax2.set_xlabel("Paired Difference in Test Accuracy (pp)", fontsize=8.4, fontweight='bold', color=C_DARK)
-ax2.set_title("(b) Confirmatory Paired Contrasts", fontsize=9.0, fontweight='bold', color=C_DARK, pad=5)
+ax2.set_xlabel("Paired Difference in Test Accuracy (pp)", fontsize=8.6, fontweight='bold', color=C_DARK)
+ax2.set_title("(b) Confirmatory Paired Contrasts", fontsize=9.2, fontweight='bold', color=C_DARK, pad=6)
 ax2.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1')
 
 # Legend placed in upper right with no obstruction
-line_t = plt.Line2D([0], [0], color=C_BLUE, lw=1.5, label="95% Paired t-CI")
+line_t = plt.Line2D([0], [0], color=C_BLUE, lw=1.6, label="95% Paired t-CI")
 line_b = plt.Line2D([0], [0], color=C_PURPLE, lw=2.4, label="95% Bootstrap CI")
 line_z = plt.Line2D([0], [0], color=C_RED, linestyle='--', lw=1.1, label="Null (0 pp)")
-ax2.legend(handles=[line_t, line_b, line_z], loc='upper right', frameon=True, framealpha=0.92, fontsize=7.0, edgecolor='#CBD5E1')
+ax2.legend(handles=[line_t, line_b, line_z], loc='upper right', frameon=True, framealpha=0.92, fontsize=7.2, edgecolor='#CBD5E1')
 
-plt.subplots_adjust(left=0.125, right=0.98, top=0.86, bottom=0.20)
+plt.subplots_adjust(left=0.125, right=0.98, top=0.88, bottom=0.18)
 
 pdf_out = os.path.join(FIGURES_DIR, "figure_paired_contrasts_forest_plot.pdf")
 png_out = os.path.join(FIGURES_DIR, "figure_paired_contrasts_forest_plot.png")
-fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.06)
-fig.savefig(png_out, bbox_inches='tight', pad_inches=0.06, dpi=300)
+fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.05)
+fig.savefig(png_out, bbox_inches='tight', pad_inches=0.05, dpi=300)
 
 for d in [CLEAN_FIGURES_DIR]:
-    fig.savefig(os.path.join(d, "figure_paired_contrasts_forest_plot.pdf"), bbox_inches='tight', pad_inches=0.06)
-    fig.savefig(os.path.join(d, "figure_paired_contrasts_forest_plot.png"), bbox_inches='tight', pad_inches=0.06, dpi=300)
+    fig.savefig(os.path.join(d, "figure_paired_contrasts_forest_plot.pdf"), bbox_inches='tight', pad_inches=0.05)
+    fig.savefig(os.path.join(d, "figure_paired_contrasts_forest_plot.png"), bbox_inches='tight', pad_inches=0.05, dpi=300)
 
 plt.close(fig)
 print(f"Figure 2 successfully generated: {pdf_out}")
