@@ -110,6 +110,12 @@ Table~\ref{tab:supp_twenty_seeds_raw} compiles terminal test accuracies across a
 }
 \end{table*}
 
+\begin{figure*}[!ht]
+\centering
+\includegraphics[width=0.62\linewidth]{figures/figure_cifar_permutation_null.pdf}
+\caption{\textbf{Exact Paired Permutation Null Distribution on CIFAR-100 ($N = 20$).} Complete enumeration of all $2^{20} = 1{,}048{,}576$ sign-flip permutations for the primary contrast $\Delta_{\mathrm{total}} = S_1 - C_0$. The observed test statistic ($-0.43$ pp, solid red line) falls within the non-rejection region (exact two-tailed $p = 0.091$, shaded red tails).}\label{fig:supp_permutation_null}
+\end{figure*}
+
 \clearpage
 \section{Multi-Domain Screening Spectrum and Goodness-of-Fit}\label{sec:supp_screening}
 
@@ -427,6 +433,19 @@ SCC  & Squamous Cell Carcinoma & 502 & 63 & 63 & 628 \\
 \end{tabular}%
 }
 \end{table*}
+
+\begin{figure*}[!ht]
+\centering
+\includegraphics[width=0.62\linewidth]{figures/figure_applied_effrank_longitudinal.pdf}
+\caption{\textbf{Longitudinal Effective Rank Trajectory in Clinical Dermoscopy.} Feature dimensionality dynamics across milestones $\bm{\theta}_1$ (step 5k warmup), $\bm{\theta}_2$ (step 7k post-detour), and $\bm{\theta}_3$ (step 12k terminal recovery). The off-task auxiliary detour ($S_1$, orange) triggers an acute drop of 359 dimensions at $\bm{\theta}_2$ ($t(7) = -53.4, p = 2.12 \times 10^{-10}$), which completely recovers to statistical parity with continuous baselines under subsequent target fine-tuning.}\label{fig:supp_applied_effrank}
+\end{figure*}
+
+\begin{figure*}[!ht]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/figure_applied_manifold_cumulative_and_c0.pdf}
+\caption{\textbf{Supplementary Manifold Geometry Diagnostics on ISIC 2019.} (Left) Cumulative spectral energy distribution across singular value dimensions $k$, showing acute variance compression under the $S_1$ detour at $\bm{\theta}_2$ (red) compared to preserved variance in continuous training $C_0$ (purple). (Right) 2D t-SNE projection of clinical test lesions under uninterrupted training ($C_0$) at step 7k, demonstrating preserved diagnostic cluster structure.}\label{fig:supp_applied_manifold_cumulative}
+\end{figure*}
+
 
 \begin{table*}[!ht]
 \caption{Applied fine-tuning pilot benchmark across $N = 2$ independent seeds (900001, 900002) on ISIC 2019 dermoscopy. Evaluates terminal metrics at $\theta_3$ (12,000 updates) alongside intermediate Phase 2 representation diagnostics at $\theta_2$ (7,000 updates).}\label{tab:supp_applied_pilot_summary}

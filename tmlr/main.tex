@@ -99,7 +99,7 @@ Switching between tasks during training connects directly to continual learning,
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.72\linewidth]{figures/figure_edafnet_style_framework.pdf}
+\includegraphics[width=\linewidth]{figures/figure_edafnet_style_framework.pdf}
 \caption{\textbf{Controlled Multi-Phase Experimental Protocols.} Overview of the three-phase schedules across from-scratch and applied regimes. \newline (Top) Regime 1: From-scratch CIFAR-100 optimization (35k updates). (Bottom) Regime 2: Applied clinical dermoscopy fine-tuning on ISIC 2019 (12k updates). Both regimes compare continuous training ($C_0$, blue), on-target reset ($C_3$, green), and auxiliary detour ($S_1$, red).}\label{fig:framework}
 \end{figure*}
 
@@ -202,8 +202,8 @@ $\Delta_{\mathrm{aux}} = S_1 - C_3$ (Data Contribution) & $-0.03$ pp & 1.56 pp &
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.68\linewidth]{figures/figure_paired_contrasts_forest_plot.pdf}
-\caption{\textbf{Primary Paired Confirmatory Contrasts on CIFAR-100.} Auxiliary detours yield no significant transfer advantage over continuous training under matched budgets. \newline Point estimates show mean paired differences across $N = 20$ seeds with 95\% paired $t$-intervals (thick bars), 95\% bootstrap intervals (thin ticks), and individual paired differences (open circles) across exploratory ($N = 6$) and confirmatory ($N = 14$) partitions.}\label{fig:confirmatory_forest}
+\includegraphics[width=0.98\linewidth]{figures/figure_paired_contrasts_forest_plot.pdf}
+\caption{\textbf{Primary Paired Confirmatory Contrasts on CIFAR-100.} Auxiliary detours yield no significant transfer advantage over continuous training under matched budgets. (a) Seed-level paired trajectory profiles across $N = 20$ seeds under matched 35,000 updates. (b) Confirmatory paired contrasts showing point estimates with 95\% paired $t$-intervals (thick bars), 95\% bootstrap intervals (thin ticks), and null reference line.}\label{fig:confirmatory_forest}
 \end{figure*}
 
 We test Hypothesis H1 by comparing detour schedule $S_1$ directly against continuous baseline $C_0$ across $N = 20$ paired random seeds under the matched 35,000-update budget. Continuous training on CIFAR-100 alone reaches a mean test accuracy of $56.69\% \pm 0.75\%$. In comparison, inserting 5,000 auxiliary updates on STL-10 achieves $56.26\% \pm 1.51\%$. As shown in Table~\ref{tab:primary_confirmatory}, the primary difference $\Delta_{\mathrm{total}} = S_1 - C_0$ averages $-0.43$ percentage points ($95\%$ paired $t$-interval [$-0.94$, $+0.07$] pp, $t(19) = -1.79, p = 0.090$; permutation $p = 0.091$). Across the 20 seeds, 13 runs achieve higher final accuracy under continuous training, with individual paired differences ranging between $-2.76$ and $+2.12$ pp. Because the confidence interval excludes practical positive gains and the average difference remains negative, these results fail to support Hypothesis H1. Spending compute on an auxiliary detour offers no final performance advantage over staying on target.
@@ -236,7 +236,7 @@ $F_{11}$ ($C_3$ Bundled Reset) & Temporary head $h_{\mathrm{temp}}$ & Zeroed at 
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.68\linewidth]{figures/figure_factorial_decomposition.pdf}
+\includegraphics[width=0.98\linewidth]{figures/figure_factorial_decomposition.pdf}
 \caption{\textbf{Factorial Attribution of Procedural Reset Penalties.} Head replacement accounts entirely for the observed transfer deficit, while momentum flushing provides mild regularization. \newline (a) Interaction plot showing strictly parallel trajectories across the four factorial arms, indicating zero interaction ($+0.02$ pp, $p = 0.967$). (b) Marginal main effects forest plot confirming a significant head penalty ($-2.10$ pp, $p = 0.004$) versus an uncertain momentum effect ($+0.57$ pp, $p = 0.279$).}\label{fig:factorial_decomposition}
 \end{figure*}
 
@@ -266,7 +266,7 @@ $S_1$ (Auxiliary)  & $52.8 \pm 0.9$ & $21.9 \pm 1.1$ & $62.7 \pm 0.9$ & $162.7 \
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.55\linewidth]{figures/figure_longitudinal_representation_dynamics.pdf}
+\includegraphics[width=\linewidth]{figures/figure_longitudinal_representation_dynamics.pdf}
 \caption{\textbf{Longitudinal Representation Trajectory Dynamics on CIFAR-100.} Off-task gradients induce severe representational distortion that rapidly repairs during target relearning. (a) Effective Rank contracting during auxiliary training at $\bm{\theta}_2$ before recovering during Phase 3. (b) Linear CKA drift showing persistent representational rotation at $\bm{\theta}_3$ ($\Dcka = 0.461$). (c) Matched frozen linear probes collapsing to $21.9\%$ under the detour before snapping back to statistical parity with $C_0$ ($62.7\%$).}\label{fig:representation_dynamics}
 \end{figure*}
 
@@ -282,7 +282,7 @@ To evaluate how task similarity shapes representation drift and recovery, we tes
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.62\linewidth]{figures/figure_monotonic_representation_spectrum.pdf}
+\includegraphics[width=\linewidth]{figures/figure_monotonic_representation_spectrum.pdf}
 \caption{\textbf{Multi-Domain Representation and Recovery Spectrum.} Target relearning latency scales monotonically with geometric representational displacement. \newline (a) Monotonic relationship between recovery latency ($u_{\mathrm{rec}}$) and Phase 2 linear CKA drift across natural and synthetic shifts ($B_1$ to $B_7$). (b) Validation performance drop tracking geometric representational drift across the full semantic spectrum.}\label{fig:screening_spectrum}
 \end{figure*}
 
@@ -316,8 +316,8 @@ $S_1 - C_0$ (Detour vs. Continuous Baseline) & $-0.41$ pp & 1.08 pp & [$-1.31$, 
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.42\linewidth]{figures/figure_applied_contrasts_forest_plot.pdf}
-\caption{\textbf{Confirmatory Paired Contrasts in Applied Clinical Transfer.} Off-task natural image detours yield no statistically detectable performance difference over procedural reset controls on clinical dermoscopy. Mean paired differences across $N = 8$ seeds ($12{,}000$ updates, ImageNet ResNet-50) shown with 95\% paired $t$-intervals (thick bars), 95\% bootstrap intervals (thin ticks), and individual paired differences (open circles). Both reset and detour arms yield null differences against baseline ($p > 0.20$).}\label{fig:applied_forest}
+\includegraphics[width=0.98\linewidth]{figures/figure_applied_contrasts_forest_plot.pdf}
+\caption{\textbf{Confirmatory Paired Contrasts in Applied Clinical Transfer.} Off-task natural image detours yield no statistically detectable performance difference over procedural reset controls on clinical dermoscopy. (a) Seed-level paired trajectory profiles across $N = 8$ fine-tuning runs ($12{,}000$ updates, ImageNet ResNet-50). (b) Confirmatory paired contrasts with 95\% paired $t$-intervals (thick bars) and 95\% bootstrap intervals (thin ticks); all contrasts yield null differences ($p > 0.20$).}\label{fig:applied_forest}
 \end{figure*}
 
 To evaluate whether auxiliary detours benefit high-resolution medical transfer, we compare continuous training ($C_0$), procedural reset ($C_3$), and auxiliary detour ($S_1$) across $N = 8$ paired random seeds (seeds 1001--1008, 24 runs total; Table~\ref{tab:applied_primary_confirmatory}, Figure~\ref{fig:applied_forest}). Continuous baseline fine-tuning achieves $85.18\% \pm 0.70\%$ Top-1 accuracy, on-target procedural control $C_3$ reaches $84.68\% \pm 0.42\%$, and inserting 2,000 updates on Imagenette ($S_1$) yields $84.76\% \pm 0.67\%$. The primary contrast against uninterrupted training ($\Delta_{\mathrm{total}} = S_1 - C_0$) produces an average difference of $-0.41$ pp ($95\%$ CI [$-1.31$, $+0.49$] pp, $t(7) = -1.08, p = 0.315$). Contrasting the auxiliary schedule directly against procedural control ($S_1 - C_3$) yields a difference of $+0.08$ pp ($95\%$ CI [$-0.53$, $+0.69$] pp, $t(7) = +0.31, p = 0.767$). In realistic fine-tuning pipelines, taking an off-task detour yields no statistically detectable difference in final diagnostic accuracy compared to an on-target procedural reset. While this non-significant contrast cannot prove zero transfer, the confidence bounds rule out substantial transfer effects exceeding 0.7 pp.
@@ -326,13 +326,13 @@ To evaluate whether auxiliary detours benefit high-resolution medical transfer, 
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.42\linewidth]{figures/figure_applied_manifold_and_scree.pdf}
-\caption{\textbf{Transient Representation Collapse and Asymptotic Recovery in Clinical Dermoscopy.} Representation geometry undergoes acute dimensional compression during off-task detours, but feature dimensionality and cluster separability rebound under target relearning. (a) Singular value spectrum showing transient spectral compression at $\bm{\theta}_2$ (red) and complete recovery at $\bm{\theta}_3$ (green). (b) Cumulative spectral energy demonstrating variance collapse. (c--f) 2D t-SNE projections of clinical test lesions across 8 ISIC categories. (c) Intact manifolds at $\bm{\theta}_1$; (d) Severe manifold rotation under the $S_1$ detour at $\bm{\theta}_2$; (e) Preserved manifolds under continuous $C_0$; (f) Diagnostic re-clustering at terminal $\bm{\theta}_3$.}\label{fig:applied_manifold_scree}
+\includegraphics[width=\linewidth]{figures/figure_applied_manifold_and_scree.pdf}
+\caption{\textbf{Transient Representation Collapse and Asymptotic Recovery in Clinical Dermoscopy.} Representation geometry undergoes acute dimensional compression during off-task detours, but feature dimensionality and cluster separability rebound under target relearning. (a) Singular value spectrum showing transient spectral compression at $\bm{\theta}_2$ (red) and complete recovery at $\bm{\theta}_3$ (green). (b--d) 2D t-SNE projections across 8 ISIC diagnostic categories at (b) Step 5k warmup ($\bm{\theta}_1$), (c) Step 7k auxiliary detour ($\bm{\theta}_2$), and (d) Step 12k terminal recovery ($\bm{\theta}_3$). See Supplementary Section~F and Figure~S3 for continuous control comparisons and cumulative spectral variance.}\label{fig:applied_manifold_scree}
 \end{figure*}
 
-To examine how internal representations evolve during off-task fine-tuning, we track penultimate feature geometry across 2,000 clinical test lesions at milestones $\bm{\theta}_1$ (step 5k, warmup), $\bm{\theta}_2$ (step 7k, post-detour), and $\bm{\theta}_3$ (step 12k, terminal) using singular value decomposition, Effective Rank, and t-SNE projections (Figure~\ref{fig:applied_manifold_scree}). Off-task updates trigger severe geometric compression: Effective Rank drops by 359 dimensions (from $1146.9 \pm 8.3$ at $\bm{\theta}_1$ to $787.1 \pm 10.9$ at $\bm{\theta}_2$, $t(7) = -53.4, p = 2.12 \times 10^{-10}$), while CKA drift relative to $\bm{\theta}_1$ surges 3.1-fold to $\Dcka = 0.476 \pm 0.032$ (vs.\ $0.153 \pm 0.010$ for $C_0$). As visualized in Figure~\ref{fig:applied_manifold_scree}d, off-task gradients rotate penultimate representations away from the dermoscopy manifold, scattering diagnostic clusters into disorganization.
+To examine how internal representations evolve during off-task fine-tuning, we track penultimate feature geometry across 2,000 clinical test lesions at milestones $\bm{\theta}_1$ (step 5k, warmup), $\bm{\theta}_2$ (step 7k, post-detour), and $\bm{\theta}_3$ (step 12k, terminal) using singular value decomposition, Effective Rank, and t-SNE projections (Figure~\ref{fig:applied_manifold_scree}). Off-task updates trigger severe geometric compression: Effective Rank drops by 359 dimensions (from $1146.9 \pm 8.3$ at $\bm{\theta}_1$ to $787.1 \pm 10.9$ at $\bm{\theta}_2$, $t(7) = -53.4, p = 2.12 \times 10^{-10}$), while CKA drift relative to $\bm{\theta}_1$ surges 3.1-fold to $\Dcka = 0.476 \pm 0.032$ (vs.\ $0.153 \pm 0.010$ for $C_0$). As visualized in Figure~\ref{fig:applied_manifold_scree}c, off-task gradients rotate penultimate representations away from the dermoscopy manifold, scattering diagnostic clusters into disorganization.
 
-Subsequent target fine-tuning during Phase 3 largely reverses this collapse. By step 12,000 ($\bm{\theta}_3$), Effective Rank in $S_1$ expands back to $1139.8 \pm 7.1$ dimensions, matching continuous training $C_0$ ($1142.1 \pm 9.7$), while terminal CKA drift drops to $\Dcka = 0.170 \pm 0.021$ (comparable to $0.178 \pm 0.012$ for reset control $C_3$, vs.\ $0.160 \pm 0.016$ for $C_0$). 2D t-SNE projections (Figure~\ref{fig:applied_manifold_scree}f) confirm that lesion representations re-cluster into well-separated diagnostic manifolds. Pretrained networks exhibit broad attraction basins: while absorbing acute transient distortion during auxiliary detours, subsequent on-task fine-tuning restores feature dimensionality and diagnostic separability, reaching functional parity with continuous baselines in a rotated coordinate frame.
+Subsequent target fine-tuning during Phase 3 largely reverses this collapse. By step 12,000 ($\bm{\theta}_3$), Effective Rank in $S_1$ expands back to $1139.8 \pm 7.1$ dimensions, matching continuous training $C_0$ ($1142.1 \pm 9.7$), while terminal CKA drift drops to $\Dcka = 0.170 \pm 0.021$ (comparable to $0.178 \pm 0.012$ for reset control $C_3$, vs.\ $0.160 \pm 0.016$ for $C_0$). 2D t-SNE projections (Figure~\ref{fig:applied_manifold_scree}d) confirm that lesion representations re-cluster into well-separated diagnostic manifolds. Pretrained networks exhibit broad attraction basins: while absorbing acute transient distortion during auxiliary detours, subsequent on-task fine-tuning restores feature dimensionality and diagnostic separability, reaching functional parity with continuous baselines in a rotated coordinate frame.
 
 \section{Implications and Limitations}\label{sec:discussion}
 
