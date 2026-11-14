@@ -82,52 +82,78 @@ boot_ci_high = [+0.0200, +0.6700, +0.2400, +0.9200]
 # =========================================================================
 # MAIN MANUSCRIPT FIGURE 2: 2 Panels with maximum vertical clarity (3.40 in)
 # =========================================================================
+# Subtle deterministic dodge for tied and closely clustered points (< 0.12% apart)
+# Ensures every individual seed dot has a visible, non-overlapping circular boundary
+def dodge_close_points(vals, center_x, step=0.040, tol=0.12):
+    n = len(vals)
+    xs = np.full(n, center_x)
+    order = np.argsort(vals)
+    clusters = []
+    curr = [order[0]]
+    for i in range(1, n):
+        idx = order[i]
+        prev_idx = order[i-1]
+        if vals[idx] - vals[prev_idx] <= tol:
+            curr.append(idx)
+        else:
+            clusters.append(curr)
+            curr = [idx]
+    clusters.append(curr)
+    for cl in clusters:
+        k = len(cl)
+        if k > 1:
+            shifts = np.linspace(-(k-1)*step/2.0, (k-1)*step/2.0, k)
+            for j, s_idx in enumerate(cl):
+                xs[s_idx] = center_x + shifts[j]
+    return xs
+
+xs_c0 = dodge_close_points(c0_35k, 0.0, step=0.040, tol=0.12)
+xs_s1 = dodge_close_points(s1_35k, 1.0, step=0.040, tol=0.12)
+
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.40), dpi=300,
-                               gridspec_kw={'width_ratios': [0.90, 1.25], 'wspace': 0.82})
+                               gridspec_kw={'width_ratios': [0.90, 1.25], 'wspace': 0.85})
 
 # --- Panel (a): Seed-Level Paired Slopes ---
-x_c0, x_s1 = 0.0, 1.0
 for i in range(len(seeds)):
-    y0, y1 = c0_35k[i], s1_35k[i]
-    d = diffs_primary[i]
-    col = C_GREEN if d >= 0 else C_RED
-    ax1.plot([x_c0, x_s1], [y0, y1], color=col, lw=1.20, alpha=0.55, zorder=3)
-    ax1.scatter([x_c0, x_s1], [y0, y1], color=col, s=22, alpha=0.75, zorder=4, edgecolor='white', linewidth=0.5)
+    col = C_GREEN if diffs_primary[i] >= 0 else C_RED
+    # Clean connecting trajectory line
+    ax1.plot([xs_c0[i], xs_s1[i]], [c0_35k[i], s1_35k[i]], color=col, lw=1.20, alpha=0.50, zorder=3)
+    # Open ring markers with white interior: crisp, non-occluding boundaries
+    ax1.scatter(xs_c0[i], c0_35k[i], facecolor='white', edgecolor=col, linewidth=1.3, s=26, alpha=0.95, zorder=4)
+    ax1.scatter(xs_s1[i], s1_35k[i], facecolor='white', edgecolor=col, linewidth=1.3, s=26, alpha=0.95, zorder=4)
 
 # Grand Mean Trajectory
-ax1.plot([x_c0, x_s1], [mean_c0, mean_s1], color=C_DARK, lw=3.0, marker='D', markersize=7.0, zorder=6)
-
-# Internal annotations for mean values with subtle arrows
-ax1.annotate(f"Mean: {mean_c0:.2f}%", xy=(x_c0, mean_c0), xytext=(x_c0 + 0.08, mean_c0 + 0.65),
-             fontsize=8.0, fontweight='bold', color=C_DARK,
-             arrowprops=dict(arrowstyle="->", color=C_DARK, lw=0.8),
-             bbox=dict(boxstyle="round,pad=0.20", facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=7))
-
-# Positioned safely inside ax1: xytext at x_s1 - 0.48 so right edge is well inside the right spine
-ax1.annotate(f"Mean: {mean_s1:.2f}%\n({mean_diff:+.2f} pp)", xy=(x_s1, mean_s1), xytext=(x_s1 - 0.48, mean_s1 - 1.20),
-             fontsize=8.0, fontweight='bold', color=C_DARK,
-             arrowprops=dict(arrowstyle="->", color=C_DARK, lw=0.8),
-             bbox=dict(boxstyle="round,pad=0.20", facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=7))
+ax1.plot([0.0, 1.0], [mean_c0, mean_s1], color=C_DARK, lw=3.2, zorder=6)
+# Distinct white diamond with dark bold border
+ax1.scatter([0.0, 1.0], [mean_c0, mean_s1], marker='D', s=48, facecolor='white', edgecolor=C_DARK, linewidth=2.0, zorder=7)
 
 ax1.set_xlim(-0.25, 1.25)
-ax1.set_ylim(51.0, 60.5)
-ax1.set_yticks([52, 54, 56, 58, 60])
-ax1.set_yticklabels(["52%", "54%", "56%", "58%", "60%"], fontsize=8.2, fontweight='bold')
-ax1.set_xticks([x_c0, x_s1])
-ax1.set_xticklabels([r"$\mathbf{C_0}$ Continuous" + "\n(35k Updates)", r"$\mathbf{S_1}$ Auxiliary" + "\n(35k Updates)"],
-                    fontsize=8.4, fontweight='bold')
+ax1.set_ylim(51.6, 59.6)
+ax1.set_yticks([52, 54, 56, 58])
+ax1.set_yticklabels(["52%", "54%", "56%", "58%"], fontsize=8.2, fontweight='bold')
+ax1.set_xticks([0.0, 1.0])
+ax1.set_xticklabels([
+    r"$\mathbf{C_0}$ Continuous" + f"\nMean: {mean_c0:.2f}%\n(35k Updates)",
+    r"$\mathbf{S_1}$ Auxiliary" + f"\nMean: {mean_s1:.2f}%\n(35k Updates)"
+], fontsize=8.0, fontweight='bold')
 ax1.set_ylabel("Terminal CIFAR-100 Acc. (%)", fontsize=9.2, fontweight='bold', color=C_DARK, labelpad=3.0)
 ax1.set_title("(a) Seed-Level Paired Profiles (N = 20)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=8)
 
-# Explanatory legend detailing the exact seed breakdown (concise labels to avoid spine collision)
-line_mean = plt.Line2D([0], [0], color=C_DARK, lw=3.0, marker='D', markersize=6.0, label=rf"Mean ($\Delta = -0.43$ pp)")
-line_pos = plt.Line2D([0], [0], color=C_GREEN, lw=1.5, marker='o', markersize=5.0, label="Gains: n = 7 (+0.64 pp)")
-line_neg = plt.Line2D([0], [0], color=C_RED, lw=1.5, marker='o', markersize=5.0, label="Drops: n = 13 (-1.01 pp)")
+# Explanatory legend detailing the exact seed breakdown
+line_mean = plt.Line2D([0], [0], color=C_DARK, lw=3.0, marker='D', markersize=5.5,
+                       markerfacecolor='white', markeredgecolor=C_DARK, markeredgewidth=1.5,
+                       label=rf"Mean ($\Delta = -0.43$ pp)")
+line_pos = plt.Line2D([0], [0], color=C_GREEN, lw=1.5, marker='o', markersize=5.0,
+                      markerfacecolor='white', markeredgecolor=C_GREEN, markeredgewidth=1.2,
+                      label="Gains: n = 7 (+0.64 pp)")
+line_neg = plt.Line2D([0], [0], color=C_RED, lw=1.5, marker='o', markersize=5.0,
+                      markerfacecolor='white', markeredgecolor=C_RED, markeredgewidth=1.2,
+                      label="Drops: n = 13 (-1.01 pp)")
 ax1.legend(handles=[line_mean, line_pos, line_neg], loc='upper left', frameon=True, framealpha=0.95, fontsize=7.2, edgecolor='#CBD5E1')
 ax1.grid(True, linestyle=':', alpha=0.6, color='#CBD5E1', axis='y')
 
-# Statistical takeaway badge (two lines to maintain generous margin from spines)
-ax1.text(0.5, 51.3, "13 of 20 seeds favor Continuous\n(p = 0.090, Wilcoxon)", ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_MUTED,
+# Statistical takeaway badge
+ax1.text(0.5, 51.8, "13 of 20 seeds favor Continuous\n(p = 0.090, Wilcoxon)", ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_MUTED,
          bbox=dict(boxstyle="round,pad=0.22", facecolor='#F8FAFC', edgecolor='#CBD5E1', lw=0.8, zorder=5))
 
 # --- Panel (b): Confirmatory Contrasts Forest Plot ---
