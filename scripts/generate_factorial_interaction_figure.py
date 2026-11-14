@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 Generate publication-grade Figure 3: Factorial Decomposition of Procedural Costs.
-Designed at native 6.5-inch width (6.5 x 3.10 in) following top-tier journal aesthetics:
+Designed at native 6.5-inch width (6.5 x 3.15 in) following top-tier journal aesthetics:
 - Panel (a): Factorial Interaction Plot.
-  * Mean trajectories with 95% t-confidence intervals (faint background seed lines removed for clarity).
+  * Clean population mean trajectories with 95% t-confidence intervals (faint seed lines removed).
   * Zoomed y-axis (53.2--58.6%) to highlight slope parallelism.
   * Numerical annotations positioned cleanly with white protective backing.
-  * Clean, bordered legend situated in clear lower-left whitespace.
+  * Clean, borderless horizontal legend placed OUTSIDE above the plot frame (zero inside collisions).
   * Simple, elegant title: "(a) Factorial Interaction".
 - Panel (b): Marginal Contrasts Forest Plot (95% CI).
   * 3 spacious contrast rows guided by subtle horizontal gridlines.
@@ -75,8 +75,8 @@ effects = [
     (r"Factorial Interaction ($\Delta_{\mathrm{int}}$)" + "\n" + r"($F = 0.002, p = 0.967$)", diff_int, C_PURPLE)
 ]
 
-# Set up figure with native 6.5 in width and 3.10 in height
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.10), dpi=300,
+# Set up figure with native 6.5 in width and 3.15 in height
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.15), dpi=300,
                                gridspec_kw={'width_ratios': [1.0, 1.25], 'wspace': 0.75})
 
 # =========================================================================
@@ -95,7 +95,7 @@ ax1.errorbar(x, y_cont, yerr=err_cont, fmt='o-', color=C_BLUE, lw=3.2, markersiz
 ax1.errorbar(x, y_reset, yerr=err_reset, fmt='s--', color=C_GREEN, lw=3.2, markersize=8.0,
              capsize=4.5, capthick=1.5, label=r"Reset Mom ($\mathbf{v} \leftarrow \mathbf{0}$)", zorder=5)
 
-# 2. Add numerical annotations with white bounding boxes to prevent overlap
+# 2. Numerical annotations with protective white backing
 ax1.text(-0.08, y_cont[0] - 0.12, f"{y_cont[0]:.2f}%", ha='right', va='center', fontsize=8.2, fontweight='bold', color=C_BLUE,
          bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.90, zorder=6))
 ax1.text(-0.08, y_reset[0] + 0.12, f"{y_reset[0]:.2f}%", ha='right', va='center', fontsize=8.2, fontweight='bold', color=C_GREEN,
@@ -109,7 +109,7 @@ ax1.text(1.08, y_reset[1] + 0.12, f"{y_reset[1]:.2f}%", ha='left', va='center', 
 ax1.set_xticks(x)
 ax1.set_xticklabels([r"Retained Head ($h_A$)" + "\n(Continuous)", r"Temp Head ($h_{\mathrm{temp}}$)" + "\n(Substituted)"], fontsize=8.2, fontweight='bold')
 ax1.set_ylabel("CIFAR-100 Test Accuracy (%)", fontsize=9.0, fontweight='bold', color=C_DARK)
-ax1.set_title("(a) Factorial Interaction", fontsize=9.8, fontweight='bold', color=C_DARK, pad=12)
+ax1.set_title("(a) Factorial Interaction", fontsize=9.8, fontweight='bold', color=C_DARK, pad=26)
 
 # Zoom in to make slopes clearly readable (53.2 to 58.6)
 ax1.set_ylim(53.2, 58.6)
@@ -117,8 +117,8 @@ ax1.set_yticks([54, 55, 56, 57, 58])
 ax1.set_yticklabels(["54%", "55%", "56%", "57%", "58%"], fontsize=8.2, fontweight='bold')
 ax1.set_xlim(-0.30, 1.30)
 
-# Legend placed in clean lower-left whitespace
-ax1.legend(loc='lower left', frameon=True, framealpha=0.95, fontsize=7.6, edgecolor='#CBD5E1')
+# CLEAN OUTSIDE HORIZONTAL LEGEND - ZERO COLLISION WITH DATA!
+ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False, fontsize=7.6)
 ax1.grid(axis='y', linestyle=':', alpha=0.3, color='#CBD5E1')
 
 ax1.spines['top'].set_visible(False)
@@ -158,13 +158,13 @@ for i in range(3):
     # Clean annotations strictly above each point with white protective box
     sign_str = f"{m:+.2f} pp"
     ax2.text(m, y + 0.20, sign_str, ha='center', va='bottom', color=col, fontsize=7.8, fontweight='bold',
-             bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.90, zorder=6))
+             bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='none', alpha=0.90, zorder=6))
 
 # Formatting
 ax2.set_yticks(y_pos)
 ax2.set_yticklabels(labels, fontsize=8.0, fontweight='bold')
 ax2.set_xlabel("Marginal Paired Effect (pp)", fontsize=9.0, fontweight='bold', color=C_DARK)
-ax2.set_title("(b) Marginal Contrasts (95% CI)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=12)
+ax2.set_title("(b) Marginal Contrasts (95% CI)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=26)
 ax2.set_xlim(-3.6, 2.4)
 ax2.set_ylim(-0.5, 2.8)
 ax2.set_xticks([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0])
@@ -176,7 +176,7 @@ ax2.grid(axis='y', linestyle=':', alpha=0.3, color='#CBD5E1')
 ax2.spines['top'].set_visible(False)
 ax2.spines['right'].set_visible(False)
 
-plt.subplots_adjust(left=0.10, right=0.98, top=0.88, bottom=0.16)
+plt.subplots_adjust(left=0.10, right=0.98, top=0.86, bottom=0.16)
 
 pdf_out = os.path.join(FIGURES_DIR, "figure_factorial_decomposition.pdf")
 png_out = os.path.join(FIGURES_DIR, "figure_factorial_decomposition.png")
