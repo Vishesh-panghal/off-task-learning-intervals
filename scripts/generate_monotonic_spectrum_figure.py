@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
 Generate publication-grade Figure 5: Multi-Domain Recovery and Decoupling Spectrum.
-Designed at native 6.5-inch width:
-- Panel (a): Monotonic Recovery Latency (u_rec) vs Linear CKA Drift.
-- Panel (b): Classification Forgetting vs Frozen Target Linear Probe Decodability.
+Redesigned with authentic Seaborn statistical aesthetics:
+- Panel (a): Recovery Latency (u_rec) vs Linear CKA Drift.
+- Panel (b): Representational Decoupling: Classification Forgetting vs Probe Decodability.
 
-Typography:
-- Panel titles: 9.5 pt bold
-- Axis labels: 8.8 pt bold
-- Tick labels: 8.0 pt bold
-- Point tags & annotations: 7.5 pt
+Features:
+- Seaborn 'ticks' theme with clean L-frames (sns.despine)
+- Seaborn Deep palette for condition markers and labels
+- Clean non-bold data point callouts with alternating vertical placement
+- No artificial boxes or clutter; clean whitespace preservation
 """
 
 import os
@@ -19,30 +19,50 @@ from scipy import stats
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'sans-serif']
-plt.rcParams['font.family'] = 'sans-serif'
+sns.set_theme(style="ticks", font="sans-serif")
+plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'DejaVu Sans', 'sans-serif']
 plt.rcParams['mathtext.fontset'] = 'cm'
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-FIGURES_DIR = os.path.join(BASE_DIR, "figures")
-CLEAN_FIGURES_DIR = os.path.join(BASE_DIR, "clean_repo", "figures")
-for d in [FIGURES_DIR, CLEAN_FIGURES_DIR]:
+ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..")) if os.path.basename(BASE_DIR) == "clean_repo" else BASE_DIR
+
+FIGURE_DIRS = [
+    os.path.join(BASE_DIR, "figures"),
+    os.path.join(ROOT_DIR, "figures"),
+    os.path.join(ROOT_DIR, "clean_repo", "figures")
+]
+FIGURE_DIRS = list(dict.fromkeys([d for d in FIGURE_DIRS if os.path.exists(os.path.dirname(d))]))
+for d in FIGURE_DIRS:
     os.makedirs(d, exist_ok=True)
 
-CSV_PATH = os.path.join(BASE_DIR, "supplementary", "results", "screening_results.csv")
-if not os.path.exists(CSV_PATH):
-    CSV_PATH = os.path.join(BASE_DIR, "results", "screening_results.csv")
+CSV_CANDIDATES = [
+    os.path.join(BASE_DIR, "supplementary", "results", "screening_results.csv"),
+    os.path.join(ROOT_DIR, "supplementary", "results", "screening_results.csv"),
+    os.path.join(BASE_DIR, "results", "screening_results.csv"),
+    os.path.join(ROOT_DIR, "results", "screening_results.csv"),
+    os.path.join(ROOT_DIR, "clean_repo", "results", "screening_results.csv")
+]
+
+CSV_PATH = None
+for p in CSV_CANDIDATES:
+    if os.path.exists(p):
+        CSV_PATH = p
+        break
+
+if CSV_PATH is None:
+    raise FileNotFoundError("Could not find screening_results.csv in any candidate location.")
 
 df = pd.read_csv(CSV_PATH)
 
 CONDITIONS = ['B1', 'B3', 'B4', 'B5', 'B7']
 COND_META = {
-    'B1': {'short': r'$B_1$ (Reset)', 'color': '#8E44AD', 'marker': 'D'},
-    'B3': {'short': r'$B_3$ (CIFAR-10)', 'color': '#2980B9', 'marker': 'o'},
-    'B4': {'short': r'$B_4$ (STL-10)', 'color': '#27AE60', 'marker': 's'},
-    'B5': {'short': r'$B_5$ (SVHN)', 'color': '#D35400', 'marker': '^'},
-    'B7': {'short': r'$B_7$ (Noise)', 'color': '#C0392B', 'marker': 'v'}
+    'B1': {'short': r'$B_1$ (Reset)', 'color': '#8172b3', 'marker': 'D'},
+    'B3': {'short': r'$B_3$ (CIFAR-10)', 'color': '#4c72b0', 'marker': 'o'},
+    'B4': {'short': r'$B_4$ (STL-10)', 'color': '#55a868', 'marker': 's'},
+    'B5': {'short': r'$B_5$ (SVHN)', 'color': '#dd8452', 'marker': '^'},
+    'B7': {'short': r'$B_7$ (Noise)', 'color': '#c44e52', 'marker': 'v'}
 }
 
 stats_data = {}
@@ -61,8 +81,10 @@ for cond in CONDITIONS:
         'urec_se': urec_vals.std(ddof=1) / np.sqrt(n) if cond != 'B1' else 0.0,
     }
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 1.40), dpi=300,
-                               gridspec_kw={'wspace': 0.32})
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.50), dpi=300,
+                               gridspec_kw={'wspace': 0.34})
+
+C_DARK = '#1e293b'
 
 # =========================================================================
 # Panel (a): Recovery Latency vs. CKA Drift
@@ -75,15 +97,18 @@ r_sq = r_val ** 2
 
 fit_x = np.linspace(0.18, 0.98, 100)
 fit_y = slope * fit_x + intercept
-ax1.plot(fit_x, fit_y, color='#475569', linestyle='--', lw=1.3, zorder=2,
-         label=rf"Fit ($R^2 = {r_sq:.3f}, p = {p_val:.3f}$)")
+ax1.plot(fit_x, fit_y, color='#64748b', linestyle='--', lw=1.4, zorder=2)
+
+# Two-line compact fit label in open upper-left quadrant
+ax1.text(0.18, 7900.0, f"Linear Fit\n$R^2 = {r_sq:.3f},\\; p = {p_val:.3f}$",
+         fontsize=7.2, color='#475569', fontweight='medium', va='top', linespacing=1.2)
 
 callouts_a = {
-    'B1': (0.24, 600.0, 'left'),
-    'B3': (0.57, 3100.0, 'center'),
-    'B4': (0.68, 1400.0, 'left'),
-    'B5': (0.86, 5200.0, 'right'),
-    'B7': (0.91, 7400.0, 'right')
+    'B1': (0.22, 600.0, 'left', 'bottom'),
+    'B3': (0.47, 3400.0, 'center', 'bottom'),
+    'B4': (0.68, 1100.0, 'center', 'top'),
+    'B5': (0.97, 4900.0, 'left', 'center'),
+    'B7': (0.97, 6800.0, 'left', 'center')
 }
 
 for cond in CONDITIONS:
@@ -91,30 +116,34 @@ for cond in CONDITIONS:
     s = stats_data[cond]
     x, y = s['cka_mean'], s['urec_mean']
     ax1.errorbar(x, y, xerr=s['cka_se'], yerr=s['urec_se'],
-                 fmt='none', ecolor=meta['color'], elinewidth=1.2, capsize=2.5, capthick=1.0, zorder=3)
-    ax1.scatter(x, y, s=35, color=meta['color'], marker=meta['marker'], edgecolors='white', lw=0.8, zorder=4)
+                 fmt='none', ecolor=meta['color'], elinewidth=1.2, capsize=3.0, capthick=1.0, zorder=3)
+    ax1.scatter(x, y, s=40, color=meta['color'], marker=meta['marker'], edgecolors='white', lw=0.9, zorder=4)
     
-    tx, ty, ha_align = callouts_a[cond]
-    ax1.text(tx, ty, f"{meta['short']}\n{int(round(y))} upd", fontsize=6.8, fontweight='bold',
-             color=meta['color'], ha=ha_align, va='center', zorder=5)
+    tx, ty, ha_align, va_align = callouts_a[cond]
+    ax1.text(tx, ty, f"{meta['short']}\n{int(round(y))} upd", fontsize=7.2,
+             color=meta['color'], ha=ha_align, va=va_align, zorder=5, fontweight='medium')
 
-ax1.set_xlim(0.12, 1.05)
+ax1.set_xlim(0.12, 1.18)
 ax1.set_ylim(-400, 8500)
-ax1.set_xlabel(r"Phase 2 Linear CKA Drift ($D_{\mathrm{CKA}}$)", fontsize=8.5, fontweight='bold')
-ax1.set_ylabel(r"Target Recovery Latency ($u_{\mathrm{rec}}$, updates)", fontsize=8.5, fontweight='bold')
-ax1.set_title("(a) Recovery Latency vs. CKA Drift", fontsize=9.2, fontweight='bold', color='#0F172A', pad=6)
-ax1.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1')
-ax1.legend(loc='upper left', frameon=True, framealpha=0.92, fontsize=7.2, edgecolor='#CBD5E1')
+ax1.set_yticks([0, 2000, 4000, 6000, 8000])
+ax1.set_yticklabels(["0", "2k", "4k", "6k", "8k"], fontsize=7.8)
+ax1.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
+ax1.set_xticklabels(["0.2", "0.4", "0.6", "0.8", "1.0"], fontsize=7.8)
+ax1.set_xlabel(r"Phase 2 Linear CKA Drift ($D_{\mathrm{CKA}}$)", fontsize=8.6, color=C_DARK)
+ax1.set_ylabel(r"Target Recovery Latency ($u_{\mathrm{rec}}$, updates)", fontsize=8.6, color=C_DARK)
+ax1.set_title("(a) Recovery Latency vs. CKA Drift", fontsize=9.2, fontweight='semibold', color=C_DARK, pad=10)
+ax1.grid(axis='y', linestyle='--', alpha=0.35, color='#cbd5e1')
+sns.despine(ax=ax1, trim=False)
 
 # =========================================================================
 # Panel (b): Forgetting vs. Decodability
 # =========================================================================
 callouts_b = {
-    'B1': (63.0, 3.0, 'right'),
-    'B3': (28.0, 41.0, 'left'),
-    'B4': (23.5, 52.0, 'left'),
-    'B5': (9.5, 47.0, 'left'),
-    'B7': (7.0, 56.0, 'left')
+    'B1': (66.1, 5.0, 'center', 'bottom'),
+    'B3': (28.5, 45.2, 'left', 'center'),
+    'B4': (21.0, 56.5, 'left', 'bottom'),
+    'B5': (5.5, 36.0, 'left', 'top'),
+    'B7': (2.5, 56.5, 'left', 'bottom')
 }
 
 for cond in CONDITIONS:
@@ -122,30 +151,33 @@ for cond in CONDITIONS:
     s = stats_data[cond]
     x, y = s['probe_mean'], s['fb_mean']
     ax2.errorbar(x, y, xerr=s['probe_se'], yerr=s['fb_se'],
-                 fmt='none', ecolor=meta['color'], elinewidth=1.2, capsize=2.5, capthick=1.0, zorder=3)
-    ax2.scatter(x, y, s=35, color=meta['color'], marker=meta['marker'], edgecolors='white', lw=0.8, zorder=4)
+                 fmt='none', ecolor=meta['color'], elinewidth=1.2, capsize=3.0, capthick=1.0, zorder=3)
+    ax2.scatter(x, y, s=40, color=meta['color'], marker=meta['marker'], edgecolors='white', lw=0.9, zorder=4)
     
-    tx, ty, ha_align = callouts_b[cond]
-    ax2.text(tx, ty, f"{meta['short']}\n{x:.1f}% probe", fontsize=6.8, fontweight='bold',
-             color=meta['color'], ha=ha_align, va='center', zorder=5)
+    tx, ty, ha_align, va_align = callouts_b[cond]
+    ax2.text(tx, ty, f"{meta['short']}\n{x:.1f}% probe", fontsize=7.2,
+             color=meta['color'], ha=ha_align, va=va_align, zorder=5, fontweight='medium')
 
 ax2.set_xlim(0, 75)
-ax2.set_ylim(-12, 60)
-ax2.set_xlabel(r"Target Linear Probe Accuracy at $\boldsymbol{\theta}_2$ (%)", fontsize=8.5, fontweight='bold')
-ax2.set_ylabel(r"Classification Forgetting $F_B$ (pp)", fontsize=8.5, fontweight='bold')
-ax2.set_title("(b) Representational Decoupling", fontsize=9.2, fontweight='bold', color='#0F172A', pad=6)
-ax2.grid(True, linestyle=':', alpha=0.5, color='#CBD5E1')
+ax2.set_ylim(-12, 68)
+ax2.set_yticks([0, 15, 30, 45, 60])
+ax2.set_yticklabels(["0", "15", "30", "45", "60"], fontsize=7.8)
+ax2.set_xticks([0, 20, 40, 60])
+ax2.set_xticklabels(["0%", "20%", "40%", "60%"], fontsize=7.8)
+ax2.set_xlabel(r"Target Linear Probe Accuracy at $\boldsymbol{\theta}_2$", fontsize=8.6, color=C_DARK)
+ax2.set_ylabel(r"Classification Forgetting $F_B$ (pp)", fontsize=8.6, color=C_DARK)
+ax2.set_title("(b) Representational Decoupling", fontsize=9.2, fontweight='semibold', color=C_DARK, pad=10)
+ax2.grid(axis='y', linestyle='--', alpha=0.35, color='#cbd5e1')
+sns.despine(ax=ax2, trim=False)
 
-plt.subplots_adjust(left=0.08, right=0.98, top=0.86, bottom=0.22)
+plt.subplots_adjust(left=0.09, right=0.98, top=0.88, bottom=0.18)
 
-pdf_out = os.path.join(FIGURES_DIR, "figure_monotonic_representation_spectrum.pdf")
-png_out = os.path.join(FIGURES_DIR, "figure_monotonic_representation_spectrum.png")
-fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.02)
-fig.savefig(png_out, bbox_inches='tight', pad_inches=0.02, dpi=300)
-
-for d in [CLEAN_FIGURES_DIR]:
-    fig.savefig(os.path.join(d, "figure_monotonic_representation_spectrum.pdf"), bbox_inches='tight', pad_inches=0.02)
-    fig.savefig(os.path.join(d, "figure_monotonic_representation_spectrum.png"), bbox_inches='tight', pad_inches=0.02, dpi=300)
+for d in FIGURE_DIRS:
+    pdf_p = os.path.join(d, "figure_monotonic_representation_spectrum.pdf")
+    png_p = os.path.join(d, "figure_monotonic_representation_spectrum.png")
+    fig.savefig(pdf_p, bbox_inches='tight', pad_inches=0.04)
+    fig.savefig(png_p, bbox_inches='tight', pad_inches=0.04, dpi=300)
+    print(f"Saved: {pdf_p}")
 
 plt.close(fig)
-print(f"Figure 5 successfully generated: {pdf_out}")
+print("Figure 5 generation complete.")
