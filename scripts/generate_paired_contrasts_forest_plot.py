@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 Generate publication-grade Figure 2: Confirmatory Paired Contrasts on CIFAR-100.
-Redesigned with native 6.5-inch width and maximum vertical clarity (figsize 6.5 x 3.40 in):
+Redesigned with native 6.5-inch width and maximum vertical clarity (figsize 6.5 x 3.45 in):
 - Panel (a): Seed-Level Paired Profiles (N = 20 paired seeds).
-  * High-clarity individual trajectories with distinct green (+ gains) and red (- drops) slopes.
-  * Prominent Grand Mean trajectory with clean annotations entirely inside plot boundaries.
-  * Comprehensive legend breaking down Positive (n = 7) vs Negative (n = 13) seed groups.
+  * High-clarity individual trajectories in neutral slate gray with collision-free beeswarm dodge.
+  * Prominent Grand Mean trajectory in Primary Blue with clean annotations inside x-axis labels.
+  * Zero overlap: no line intersects the summary badge; no markers hide behind the Mean diamond.
 - Panel (b): Confirmatory Paired Contrasts with 95% t-intervals and bootstrap intervals.
   * Highly spacious 4-contrast forest plot with generous inter-row vertical clearance.
-  * Clear numeric badges, shaded equivalence region (±0.5 pp), and clean legend.
+  * Equivalence region label positioned at bottom (-0.48), leaving upper-right legend 100% clear.
 - Panel (c) (Permutation Null Distribution) exported as supplementary figure.
 
 Typography:
@@ -81,60 +81,74 @@ boot_ci_low = [-0.8880, -0.6700, -1.1200, -0.4300]
 boot_ci_high = [+0.0200, +0.6700, +0.2400, +0.9200]
 
 # =========================================================================
-# MAIN MANUSCRIPT FIGURE 2: 2 Panels with maximum vertical clarity (3.40 in)
+# MAIN MANUSCRIPT FIGURE 2: 2 Panels with maximum vertical clarity (3.45 in)
 # =========================================================================
-# Subtle deterministic dodge for tied and closely clustered points (< 0.10% apart)
-# Ensures every individual seed dot has a visible, non-overlapping circular boundary
-def dodge_close_points(vals, center_x, step=0.035, tol=0.10):
+# Collision-free 1D beeswarm algorithm
+# sx: points per data unit in x (~ 85 pt)
+# sy: points per data unit in y (~ 20 pt / %)
+def compute_collision_free_xs(vals, center_x, mean_val=None, min_dist_pt=5.2, step_x=0.028):
     n = len(vals)
     xs = np.full(n, center_x)
     order = np.argsort(vals)
-    clusters = []
-    curr = [order[0]]
-    for i in range(1, n):
-        idx = order[i]
-        prev_idx = order[i-1]
-        if vals[idx] - vals[prev_idx] <= tol:
-            curr.append(idx)
-        else:
-            clusters.append(curr)
-            curr = [idx]
-    clusters.append(curr)
-    for cl in clusters:
-        k = len(cl)
-        if k > 1:
-            shifts = np.linspace(-(k-1)*step/2.0, (k-1)*step/2.0, k)
-            for j, s_idx in enumerate(cl):
-                xs[s_idx] = center_x + shifts[j]
+    sx = 85.0
+    sy = 20.0
+    
+    # Pre-place the mean marker so data points do not collide with or hide behind it
+    placed = []
+    if mean_val is not None:
+        placed.append((center_x * sx, mean_val * sy, 7.5)) # 7.5 pt radius clearance for mean diamond
+        
+    for idx in order:
+        y_val = vals[idx]
+        y_pt = y_val * sy
+        best_x = center_x
+        for k in range(25):
+            candidates = [0.0] if k == 0 else [k * step_x, -k * step_x]
+            found = False
+            for cand_offset in candidates:
+                cand_x = center_x + cand_offset
+                cand_x_pt = cand_x * sx
+                collision = False
+                for px, py, req_dist in placed:
+                    d = np.hypot(cand_x_pt - px, y_pt - py)
+                    if d < req_dist:
+                        collision = True
+                        break
+                if not collision:
+                    best_x = cand_x
+                    placed.append((cand_x_pt, y_pt, min_dist_pt))
+                    found = True
+                    break
+            if found:
+                break
+        xs[idx] = best_x
     return xs
 
-xs_c0 = dodge_close_points(c0_35k, 0.0, step=0.035, tol=0.10)
-xs_s1 = dodge_close_points(s1_35k, 1.0, step=0.035, tol=0.10)
+xs_c0 = compute_collision_free_xs(c0_35k, 0.0, mean_val=mean_c0, min_dist_pt=5.2, step_x=0.028)
+xs_s1 = compute_collision_free_xs(s1_35k, 1.0, mean_val=mean_s1, min_dist_pt=5.2, step_x=0.028)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.40), dpi=300,
-                               gridspec_kw={'width_ratios': [0.90, 1.25], 'wspace': 0.88})
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.45), dpi=300,
+                               gridspec_kw={'width_ratios': [0.95, 1.25], 'wspace': 0.85})
 
 # --- Panel (a): Seed-Level Paired Slopes ---
-# 1. Neutral, transparent individual trajectories with white-core markers
 for i in range(len(seeds)):
-    ax1.plot([xs_c0[i], xs_s1[i]], [c0_35k[i], s1_35k[i]], color=C_GRAY_LINE, lw=1.20, alpha=0.45, zorder=2)
-    ax1.scatter(xs_c0[i], c0_35k[i], facecolor='white', edgecolor=C_GRAY, linewidth=1.1, s=20, alpha=0.90, zorder=3)
-    ax1.scatter(xs_s1[i], s1_35k[i], facecolor='white', edgecolor=C_GRAY, linewidth=1.1, s=20, alpha=0.90, zorder=3)
+    ax1.plot([xs_c0[i], xs_s1[i]], [c0_35k[i], s1_35k[i]], color=C_GRAY_LINE, lw=1.15, alpha=0.45, zorder=2)
+    ax1.scatter(xs_c0[i], c0_35k[i], facecolor='white', edgecolor=C_GRAY, linewidth=1.1, s=18, alpha=0.95, zorder=3)
+    ax1.scatter(xs_s1[i], s1_35k[i], facecolor='white', edgecolor=C_GRAY, linewidth=1.1, s=18, alpha=0.95, zorder=3)
 
-# 2. Bold Primary Blue Mean Trajectory (matches paper palette)
-ax1.plot([0.0, 1.0], [mean_c0, mean_s1], color=C_BLUE, lw=3.8, marker='D', markersize=8.0,
+# Bold Primary Blue Mean Trajectory (matches paper palette)
+ax1.plot([0.0, 1.0], [mean_c0, mean_s1], color=C_BLUE, lw=3.6, marker='D', markersize=8.0,
          markerfacecolor=C_BLUE, markeredgecolor='white', markeredgewidth=1.8, zorder=5)
 
-# End labels for the mean line placed beside the markers
-ax1.text(-0.08, mean_c0, f"{mean_c0:.2f}%", ha='right', va='center', fontsize=8.2, fontweight='bold', color=C_BLUE, zorder=6)
-ax1.text(1.08, mean_s1, f"{mean_s1:.2f}%", ha='left', va='center', fontsize=8.2, fontweight='bold', color=C_BLUE, zorder=6)
-
-ax1.set_xlim(-0.30, 1.30)
-ax1.set_ylim(51.6, 59.8)
-ax1.set_yticks([52, 54, 56, 58])
-ax1.set_yticklabels(["52%", "54%", "56%", "58%"], fontsize=8.2, fontweight='bold')
+ax1.set_xlim(-0.35, 1.35)
+ax1.set_ylim(51.5, 61.2)
+ax1.set_yticks([52, 54, 56, 58, 60])
+ax1.set_yticklabels(["52%", "54%", "56%", "58%", "60%"], fontsize=8.2, fontweight='bold')
 ax1.set_xticks([0.0, 1.0])
-ax1.set_xticklabels([r"$\mathbf{C_0}$ Continuous", r"$\mathbf{S_1}$ Auxiliary"], fontsize=9.0, fontweight='bold')
+ax1.set_xticklabels([
+    r"$\mathbf{C_0}$ Continuous" + f"\n(Mean: {mean_c0:.2f}%)",
+    r"$\mathbf{S_1}$ Auxiliary" + f"\n(Mean: {mean_s1:.2f}%)"
+], fontsize=8.4, fontweight='bold')
 ax1.set_ylabel("Terminal Test Accuracy (%)", fontsize=9.2, fontweight='bold', color=C_DARK, labelpad=4.0)
 ax1.set_title(r"(a) Paired Test Accuracy Profiles ($N = 20$)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=10)
 
@@ -143,7 +157,8 @@ ax1.spines['top'].set_visible(False)
 ax1.spines['right'].set_visible(False)
 
 # Clean statistical annotation badge at top-center in empty region (Section 4.4 paired t-test)
-ax1.text(0.5, 59.3, "13/20 seeds favor Continuous\n" + rf"Mean $\Delta = -0.43$ pp ($p = 0.090$, Paired $t$)",
+# Placed at y = 60.95 with va='top', bottom of box sits at ~59.7% (well above highest trajectory peak at 59.07%)
+ax1.text(0.5, 60.95, "13/20 seeds favor Continuous\n" + rf"Mean $\Delta = -0.43$ pp ($p = 0.090$, Paired $t$)",
          ha='center', va='top', fontsize=7.6, fontweight='bold', color=C_DARK,
          bbox=dict(boxstyle='round,pad=0.28', facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=6))
 
@@ -151,7 +166,9 @@ ax1.text(0.5, 59.3, "13/20 seeds favor Continuous\n" + rf"Mean $\Delta = -0.43$ 
 y_pos = np.arange(len(contrasts))[::-1]
 ax2.axvline(0.0, color=C_NULL, linestyle='--', lw=1.2, zorder=1)
 ax2.axvspan(-0.5, 0.5, facecolor='#EAFAF1', alpha=0.50, zorder=0)
-ax2.text(0.0, 3.75, "Equivalence Region (±0.5 pp)", ha='center', va='bottom', fontsize=7.2, fontweight='bold', color='#27AE60')
+
+# Placed at bottom of equivalence zone so it NEVER collides with upper-right legend!
+ax2.text(0.0, -0.48, "Equivalence Region (±0.5 pp)", ha='center', va='center', fontsize=7.2, fontweight='bold', color='#27AE60')
 
 for i, y in enumerate(y_pos):
     m = mean_diffs[i]
@@ -184,7 +201,7 @@ for i, y in enumerate(y_pos):
 ax2.set_yticks(y_pos)
 ax2.set_yticklabels(contrasts, fontsize=8.0, fontweight='bold')
 ax2.set_xlim(-1.45, 1.35)
-ax2.set_ylim(-0.6, 3.95)
+ax2.set_ylim(-0.70, 3.95)
 ax2.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0])
 ax2.set_xticklabels(["-1.0", "-0.5", "0.0", "+0.5", "+1.0"], fontsize=8.2, fontweight='bold')
 ax2.set_xlabel("Paired Difference in Test Accuracy (pp)", fontsize=9.2, fontweight='bold', color=C_DARK)
