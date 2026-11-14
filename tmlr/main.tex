@@ -159,27 +159,22 @@ For our primary target task in Regime 1, we use CIFAR-100, which contains 60,000
 Across all Regime 1 experiments, we use a ResNet-18 architecture \cite{he2016deep} adapted for small $32 \times 32$ inputs, replacing standard batch normalization with Group Normalization ($G = 32$) \cite{wu2018groupnorm} as described in Section~\ref{subsec:schedule_transitions}. This ensures that internal feature activations depend solely on individual inputs rather than batch-level running statistics, preventing artificial distribution shifts when switching tasks. An adaptive average pooling layer collapses the final convolutional feature maps into a 512-dimensional embedding vector $\bm{z} \in \mathbb{R}^{512}$, to which each task-specific classification head ($\bm{W}\bm{z} + \bm{b}$) connects directly. We train the network using mini-batch stochastic gradient descent with momentum $\mu = 0.9$, weight decay $5 \times 10^{-4}$, and batch size $B = 128$. The learning rate is held constant at $\eta = 0.1$ across the full 35,000 updates without schedules or decay steps, ensuring that optimization dynamics stay comparable across all phases and ruling out schedule timing as a confounding factor.
 
 \subsection{Diagnostic Representation Metrics}\label{subsec:protocol_diagnostics}
+Evaluating test accuracy alone obscures internal feature reorganization. To inspect feature geometry directly, we audit checkpoints at three milestones---step 15k ($\bm{\theta}_1$), step 20k ($\bm{\theta}_2$), and step 35k ($\bm{\theta}_3$)---using three complementary metrics. First, we evaluate class separability via linear classification probes \cite{alain2017understanding,belinkov2022probing}: freezing backbone weights and training a linear head ($\bm{W}_{\mathrm{probe}} \in \mathbb{R}^{100 \times 512}$) on target embeddings for 5 epochs with Adam ($\eta = 10^{-3}$, weight decay $10^{-4}$) tests how readily classes are distinguished without altering representations.
 
-Evaluating test accuracy alone tells us little about how internal representations change beneath the surface. To inspect feature representations directly, we audit intermediate checkpoints at three key points in training: step 15k ($\bm{\theta}_1$), step 20k ($\bm{\theta}_2$), and step 35k ($\bm{\theta}_3$). We analyze these checkpoints using three complementary geometric measurements.
-
-We first evaluate class separability using linear classification probes \cite{alain2017understanding,belinkov2022probing}. By freezing the backbone weights and training a new linear head ($\bm{W}_{\mathrm{probe}} \in \mathbb{R}^{100 \times 512}$) on target feature embeddings, we test how easily classes can be distinguished without altering the learned representations. We train this probe for 5 epochs with the Adam optimizer ($\eta = 10^{-3}$, weight decay $10^{-4}$) and evaluate classification accuracy on held-out validation images.
-
-Next, we measure the dimensionality of the learned representations using Effective Rank ($\EffRank$) \cite{roy2007effective,begga2026preserving}. For centered feature matrices $\bm{Z} \in \mathbb{R}^{N \times 512}$ extracted from $N = 2{,}000$ images, Effective Rank computes the exponential of the Shannon entropy of normalized singular values $p_k = \sigma_k / \sum_j \sigma_j$:
+Second, we measure feature dimensionality via Effective Rank ($\EffRank$) \cite{roy2007effective,begga2026preserving}. For centered feature matrices $\bm{Z} \in \mathbb{R}^{N \times 512}$ ($N = 2{,}000$), Effective Rank computes the exponential of the Shannon entropy of normalized singular values $p_k = \sigma_k / \sum_j \sigma_j$:
 \begin{equation}\label{eq:effrank}
-    \EffRank(\bm{Z}) \triangleq \exp\left( -\sum_{k=1}^r p_k \ln p_k \right) \in [1, 512].
+    \EffRank(\bm{Z}) \triangleq \exp\left( -\sum_{k=1}^r p_k \ln p_k \right) \in [1, 512],
 \end{equation}
-Values near 512 indicate that features spread evenly across the embedding space, whereas sharp drops signal dimensional collapse.
-
-Finally, we track representation drift using linear Centered Kernel Alignment (CKA) relative to baseline checkpoint $\bm{\theta}_1$ \cite{kornblith2019similarity}. We express this drift using the complement metric $\Dcka \triangleq 1 - \mathrm{CKA}(\bm{Z}_{\mathrm{pre}}, \bm{Z}_t) \in [0, 1]$. Looking at Effective Rank and CKA drift together allows us to tell whether representations undergo rigid coordinate rotation or lose dimensionality altogether.
+where values near 512 reflect uniform feature utilization and sharp drops indicate dimensional collapse. Finally, we track representation drift via linear Centered Kernel Alignment (CKA) relative to baseline $\bm{\theta}_1$ \cite{kornblith2019similarity}, defined as $\Dcka \triangleq 1 - \mathrm{CKA}(\bm{Z}_{\mathrm{pre}}, \bm{Z}_t) \in [0, 1]$. Jointly tracking Effective Rank and CKA drift distinguishes rigid coordinate rotation from true dimensional collapse.
 
 \subsection{Prespecified Paired Statistical Analysis Protocol}\label{subsec:protocol_statistics}
-We established all statistical testing procedures before evaluating confirmatory runs. For Regime 1, experiments span $N = 20$ independent paired seeds ($s \in \{920001, \dots, 920020\}$). To guard against cohort selection effects, the replication protocol distinguishes between an initial exploratory cohort ($N = 6$, seeds 920001--920006) and a prespecified held-out confirmatory cohort ($N = 14$, seeds 920007--920020), while reporting pooled tests across all 20 seeds. Our primary evaluation of Hypothesis H1 uses a two-sided paired Student's $t$-test on the paired difference $d_s = \mathrm{Acc}(S_1; s) - \mathrm{Acc}(C_0; s)$ with 19 degrees of freedom. We also compute non-parametric percentile bootstrap confidence intervals with 10,000 resamples and exact sign-flip permutation tests ($2^{20} = 1{,}048{,}576$ permutations).
+All statistical procedures were prespecified prior to confirmatory evaluation. For Regime 1, experiments span $N = 20$ independent paired seeds ($s \in \{920001, \dots, 920020\}$). To guard against cohort selection effects, the protocol distinguishes between an initial exploratory cohort ($N = 6$, seeds 920001--920006) and a prespecified held-out confirmatory cohort ($N = 14$, seeds 920007--920020), alongside pooled analysis across all 20 seeds. Our primary test of Hypothesis H1 applies a two-sided paired Student's $t$-test to $d_s = \mathrm{Acc}(S_1; s) - \mathrm{Acc}(C_0; s)$ with 19 degrees of freedom, supplemented by non-parametric percentile bootstrap confidence intervals ($10{,}000$ resamples) and exact sign-flip permutation tests ($2^{20} = 1{,}048{,}576$ permutations).
 
 \section{Regime 1: From-Scratch Pretraining Results}\label{sec:results}
 
 \subsection{Primary Confirmatory Evaluation: Resolving Hypothesis H1}\label{subsec:results_primary}
 
-\begin{table*}[t]
+\begin{table*}[b]
 \caption{Primary confirmatory inferential statistics on CIFAR-100 across $N = 20$ independent paired seeds on GroupNorm ResNet-18 under matched computational budget ($35{,}000$ updates).}\label{tab:primary_confirmatory}
 \centering
 \resizebox{\linewidth}{!}{%
@@ -230,7 +225,7 @@ $F_{11}$ ($C_3$ Bundled Reset) & Temporary head $h_{\mathrm{temp}}$ & Zeroed at 
 }
 \end{table*}
 
-\begin{figure*}[t]
+\begin{figure*}[b]
 \centering
 \includegraphics[width=0.98\linewidth]{figures/figure_factorial_decomposition.pdf}
 \caption{\textbf{Factorial Attribution of Procedural Reset Penalties.} (a) Factorial interaction plot showing parallel response profiles across head and momentum policies. (b) Marginal main effects forest plot comparing head substitution against momentum flushing.}\label{fig:factorial_decomposition}

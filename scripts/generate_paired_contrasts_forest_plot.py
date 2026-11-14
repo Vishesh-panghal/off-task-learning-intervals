@@ -84,7 +84,7 @@ boot_ci_low = [-0.8880, -0.6700, -1.1200, -0.4300]
 boot_ci_high = [+0.0200, +0.6700, +0.2400, +0.9200]
 
 # Set up figure at native 6.5 in width (TMLR full-width) and 3.10 in height
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.10), dpi=300,
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.50), dpi=300,
                                gridspec_kw={'width_ratios': [0.95, 1.25], 'wspace': 0.70})
 
 # =========================================================================
@@ -113,7 +113,7 @@ ax1.set_xticklabels([
     r'$\mathrm{S_1}$ Auxiliary' + '\n(35k Updates)'
 ], fontsize=8.0)
 ax1.set_ylabel('Terminal CIFAR-100 Acc. (%)', fontsize=8.6, color=C_DARK)
-ax1.set_title('(a) Paired Test Accuracy (N = 20)', fontsize=9.2, fontweight='semibold', color=C_DARK, pad=26)
+ax1.set_title('(a) Paired Test Accuracy (N = 20)', fontsize=9.2, fontweight='semibold', color=C_DARK, pad=22)
 
 ax1.grid(axis='y', linestyle='--', alpha=0.35, color='#cbd5e1')
 sns.despine(ax=ax1, trim=False)
@@ -158,7 +158,7 @@ ax2.set_ylim(-0.55, 3.85)
 ax2.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0])
 ax2.set_xticklabels(['-1.0', '-0.5', '0.0', '+0.5', '+1.0'], fontsize=7.8)
 ax2.set_xlabel('Paired Difference in Accuracy (pp)', fontsize=8.6, color=C_DARK)
-ax2.set_title('(b) Confirmatory Paired Contrasts', fontsize=9.2, fontweight='semibold', color=C_DARK, pad=26)
+ax2.set_title('(b) Confirmatory Paired Contrasts', fontsize=9.2, fontweight='semibold', color=C_DARK, pad=22)
 
 ax2.grid(axis='y', linestyle='--', alpha=0.35, color='#cbd5e1')
 sns.despine(ax=ax2, trim=False)
