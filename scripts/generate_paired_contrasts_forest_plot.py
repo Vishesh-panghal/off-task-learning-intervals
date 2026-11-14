@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
 Generate publication-grade Figure 2: Confirmatory Paired Contrasts on CIFAR-100.
-Redesigned with native 6.5-inch width and maximum vertical clarity (figsize 6.5 x 3.45 in):
+Redesigned with native 6.5-inch width and maximum vertical clarity (figsize 6.5 x 3.40 in):
 - Panel (a): Seed-Level Paired Profiles (N = 20 paired seeds).
   * High-clarity individual trajectories in neutral slate gray with collision-free beeswarm dodge.
   * Prominent Grand Mean trajectory in Primary Blue with clean annotations inside x-axis labels.
-  * Zero overlap: no line intersects the summary badge; no markers hide behind the Mean diamond.
+  * Key statistical takeaway integrated cleanly into panel header subtitle (zero internal boxes).
 - Panel (b): Confirmatory Paired Contrasts with 95% t-intervals and bootstrap intervals.
   * Highly spacious 4-contrast forest plot with generous inter-row vertical clearance.
-  * Equivalence region label positioned at bottom (-0.48), leaving upper-right legend 100% clear.
+  * Clean, borderless horizontal legend placed OUTSIDE the axes above the plot frame.
+  * Equivalence region label positioned naturally at top (3.65) inside the green shaded band.
 - Panel (c) (Permutation Null Distribution) exported as supplementary figure.
 
 Typography:
-- Panel titles: 9.8 pt bold
+- Panel titles: 8.8 pt bold
 - Axis labels: 9.2 pt bold
 - Tick labels: 8.0--8.4 pt bold
 - Legend & point tags: 7.4--7.8 pt bold
@@ -81,11 +82,9 @@ boot_ci_low = [-0.8880, -0.6700, -1.1200, -0.4300]
 boot_ci_high = [+0.0200, +0.6700, +0.2400, +0.9200]
 
 # =========================================================================
-# MAIN MANUSCRIPT FIGURE 2: 2 Panels with maximum vertical clarity (3.45 in)
+# MAIN MANUSCRIPT FIGURE 2: 2 Panels with maximum clarity (6.5 x 3.40 in)
 # =========================================================================
 # Collision-free 1D beeswarm algorithm
-# sx: points per data unit in x (~ 85 pt)
-# sy: points per data unit in y (~ 20 pt / %)
 def compute_collision_free_xs(vals, center_x, mean_val=None, min_dist_pt=5.2, step_x=0.028):
     n = len(vals)
     xs = np.full(n, center_x)
@@ -127,7 +126,7 @@ def compute_collision_free_xs(vals, center_x, mean_val=None, min_dist_pt=5.2, st
 xs_c0 = compute_collision_free_xs(c0_35k, 0.0, mean_val=mean_c0, min_dist_pt=5.2, step_x=0.028)
 xs_s1 = compute_collision_free_xs(s1_35k, 1.0, mean_val=mean_s1, min_dist_pt=5.2, step_x=0.028)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.45), dpi=300,
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.40), dpi=300,
                                gridspec_kw={'width_ratios': [0.95, 1.25], 'wspace': 0.85})
 
 # --- Panel (a): Seed-Level Paired Slopes ---
@@ -141,34 +140,31 @@ ax1.plot([0.0, 1.0], [mean_c0, mean_s1], color=C_BLUE, lw=3.6, marker='D', marke
          markerfacecolor=C_BLUE, markeredgecolor='white', markeredgewidth=1.8, zorder=5)
 
 ax1.set_xlim(-0.35, 1.35)
-ax1.set_ylim(51.5, 61.2)
-ax1.set_yticks([52, 54, 56, 58, 60])
-ax1.set_yticklabels(["52%", "54%", "56%", "58%", "60%"], fontsize=8.2, fontweight='bold')
+ax1.set_ylim(51.5, 59.8)
+ax1.set_yticks([52, 54, 56, 58])
+ax1.set_yticklabels(["52%", "54%", "56%", "58%"], fontsize=8.2, fontweight='bold')
 ax1.set_xticks([0.0, 1.0])
 ax1.set_xticklabels([
     r"$\mathbf{C_0}$ Continuous" + f"\n(Mean: {mean_c0:.2f}%)",
     r"$\mathbf{S_1}$ Auxiliary" + f"\n(Mean: {mean_s1:.2f}%)"
 ], fontsize=8.4, fontweight='bold')
 ax1.set_ylabel("Terminal Test Accuracy (%)", fontsize=9.2, fontweight='bold', color=C_DARK, labelpad=4.0)
-ax1.set_title(r"(a) Paired Test Accuracy Profiles ($N = 20$)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=10)
+
+# Clean 2-line title placing the statistical takeaway cleanly in the header
+ax1.set_title(r"(a) Paired Test Accuracy Profiles ($N = 20$)" + "\n" + r"13/20 seeds favor $C_0$ (Mean $\Delta = -0.43$ pp, $p = 0.090$)",
+              fontsize=8.8, fontweight='bold', color=C_DARK, pad=12)
 
 ax1.grid(True, linestyle=':', alpha=0.25, color='#CBD5E1', axis='y')
 ax1.spines['top'].set_visible(False)
 ax1.spines['right'].set_visible(False)
-
-# Clean statistical annotation badge at top-center in empty region (Section 4.4 paired t-test)
-# Placed at y = 60.95 with va='top', bottom of box sits at ~59.7% (well above highest trajectory peak at 59.07%)
-ax1.text(0.5, 60.95, "13/20 seeds favor Continuous\n" + rf"Mean $\Delta = -0.43$ pp ($p = 0.090$, Paired $t$)",
-         ha='center', va='top', fontsize=7.6, fontweight='bold', color=C_DARK,
-         bbox=dict(boxstyle='round,pad=0.28', facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=6))
 
 # --- Panel (b): Confirmatory Contrasts Forest Plot ---
 y_pos = np.arange(len(contrasts))[::-1]
 ax2.axvline(0.0, color=C_NULL, linestyle='--', lw=1.2, zorder=1)
 ax2.axvspan(-0.5, 0.5, facecolor='#EAFAF1', alpha=0.50, zorder=0)
 
-# Placed at bottom of equivalence zone so it NEVER collides with upper-right legend!
-ax2.text(0.0, -0.48, "Equivalence Region (±0.5 pp)", ha='center', va='center', fontsize=7.2, fontweight='bold', color='#27AE60')
+# Equivalence Region label placed cleanly at the top of the green zone
+ax2.text(0.0, 3.65, "Equivalence Region (±0.5 pp)", ha='center', va='bottom', fontsize=7.4, fontweight='bold', color='#27AE60')
 
 for i, y in enumerate(y_pos):
     m = mean_diffs[i]
@@ -191,33 +187,30 @@ for i, y in enumerate(y_pos):
     
     # Direct numeric tag placed cleanly above the point
     sign_m = f"{m:+.2f} pp" if m != 0 else "0.00 pp"
-    if i == 1: # -0.03 pp: align right of point to preserve ample clear space before the legend
-        ax2.text(m - 0.10, y + 0.24, sign_m, ha='right', va='bottom', fontsize=7.8, fontweight='bold', color=C_DARK,
-                 bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='#E2E8F0', lw=0.8, alpha=0.95, zorder=6))
-    else:
-        ax2.text(m, y + 0.24, sign_m, ha='center', va='bottom', fontsize=7.8, fontweight='bold', color=C_DARK,
-                 bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='#E2E8F0', lw=0.8, alpha=0.95, zorder=6))
+    ax2.text(m, y + 0.22, sign_m, ha='center', va='bottom', fontsize=7.8, fontweight='bold', color=C_DARK,
+             bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='#E2E8F0', lw=0.8, alpha=0.95, zorder=6))
 
 ax2.set_yticks(y_pos)
 ax2.set_yticklabels(contrasts, fontsize=8.0, fontweight='bold')
 ax2.set_xlim(-1.45, 1.35)
-ax2.set_ylim(-0.70, 3.95)
+ax2.set_ylim(-0.55, 3.85)
 ax2.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0])
 ax2.set_xticklabels(["-1.0", "-0.5", "0.0", "+0.5", "+1.0"], fontsize=8.2, fontweight='bold')
 ax2.set_xlabel("Paired Difference in Test Accuracy (pp)", fontsize=9.2, fontweight='bold', color=C_DARK)
-ax2.set_title("(b) Confirmatory Paired Contrasts", fontsize=9.8, fontweight='bold', color=C_DARK, pad=8)
+ax2.set_title("(b) Confirmatory Paired Contrasts", fontsize=8.8, fontweight='bold', color=C_DARK, pad=26)
 ax2.grid(True, linestyle=':', alpha=0.25, color='#CBD5E1')
 
 ax2.spines['top'].set_visible(False)
 ax2.spines['right'].set_visible(False)
 
-# Legend placed in upper right with generous clearance
+# CLEAN HORIZONTAL LEGEND OUTSIDE THE PLOT AREA
 line_t = plt.Line2D([0], [0], color=C_BLUE, lw=2.0, label="95% Paired t-CI")
 line_b = plt.Line2D([0], [0], color=C_PURPLE, lw=3.2, label="95% Bootstrap CI")
 line_z = plt.Line2D([0], [0], color=C_NULL, linestyle='--', lw=1.2, label="Null (0 pp)")
-ax2.legend(handles=[line_t, line_b, line_z], loc='upper right', frameon=True, framealpha=0.95, fontsize=7.4, edgecolor='#CBD5E1')
+ax2.legend(handles=[line_t, line_b, line_z], loc='lower center', bbox_to_anchor=(0.5, 1.02),
+           ncol=3, frameon=False, fontsize=7.6)
 
-plt.subplots_adjust(left=0.12, right=0.98, top=0.90, bottom=0.14)
+plt.subplots_adjust(left=0.12, right=0.98, top=0.86, bottom=0.14)
 
 pdf_out = os.path.join(FIGURES_DIR, "figure_paired_contrasts_forest_plot.pdf")
 png_out = os.path.join(FIGURES_DIR, "figure_paired_contrasts_forest_plot.png")
