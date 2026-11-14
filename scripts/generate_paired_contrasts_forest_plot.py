@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """
 Generate publication-grade Figure 2: Confirmatory Paired Contrasts on CIFAR-100.
-Redesigned with native 6.5-inch width and generous vertical height (figsize 6.5 x 2.85 in):
+Redesigned with native 6.5-inch width and maximum vertical clarity (figsize 6.5 x 3.40 in):
 - Panel (a): Seed-Level Paired Profiles (N = 20 paired seeds).
+  * High-clarity individual trajectories with distinct green (+ gains) and red (- drops) slopes.
+  * Prominent Grand Mean trajectory with clean annotations entirely inside plot boundaries.
+  * Comprehensive legend breaking down Positive (n = 7) vs Negative (n = 13) seed groups.
 - Panel (b): Confirmatory Paired Contrasts with 95% t-intervals and bootstrap intervals.
+  * Highly spacious 4-contrast forest plot with generous inter-row vertical clearance.
+  * Clear numeric badges, shaded equivalence region (±0.5 pp), and clean legend.
 - Panel (c) (Permutation Null Distribution) exported as supplementary figure.
 
 Typography:
-- Panel titles: 9.6 pt bold
-- Axis labels: 8.8 pt bold
-- Tick labels: 7.8--8.2 pt bold
-- Legend & point tags: 7.5--7.8 pt bold
+- Panel titles: 9.8 pt bold
+- Axis labels: 9.2 pt bold
+- Tick labels: 8.0--8.4 pt bold
+- Legend & point tags: 7.4--7.8 pt bold
 """
 
 import os
@@ -35,8 +40,9 @@ for d in [FIGURES_DIR, CLEAN_FIGURES_DIR]:
     os.makedirs(d, exist_ok=True)
 
 C_BLUE = '#1F77B4'      # Primary Contrast / C0 Baseline
-C_GREEN = '#2CA02C'     # Positive seeds (improved)
-C_RED = '#D62728'       # Negative seeds (deteriorated) / Null reference
+C_GREEN = '#27AE60'     # Positive seeds (improved)
+C_RED = '#E74C3C'       # Negative seeds (deteriorated)
+C_NULL = '#D62728'      # Null reference line
 C_PURPLE = '#7D3C98'    # Bootstrap CI
 C_DARK = '#0F172A'      # Slate 900
 C_MUTED = '#475569'     # Slate 600
@@ -74,10 +80,10 @@ boot_ci_low = [-0.8880, -0.6700, -1.1200, -0.4300]
 boot_ci_high = [+0.0200, +0.6700, +0.2400, +0.9200]
 
 # =========================================================================
-# MAIN MANUSCRIPT FIGURE 2: 2 Panels with generous vertical height (2.85 in)
+# MAIN MANUSCRIPT FIGURE 2: 2 Panels with maximum vertical clarity (3.40 in)
 # =========================================================================
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.85), dpi=300,
-                               gridspec_kw={'width_ratios': [0.92, 1.35], 'wspace': 0.50})
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.40), dpi=300,
+                               gridspec_kw={'width_ratios': [0.90, 1.25], 'wspace': 0.82})
 
 # --- Panel (a): Seed-Level Paired Slopes ---
 x_c0, x_s1 = 0.0, 1.0
@@ -85,43 +91,50 @@ for i in range(len(seeds)):
     y0, y1 = c0_35k[i], s1_35k[i]
     d = diffs_primary[i]
     col = C_GREEN if d >= 0 else C_RED
-    ax1.plot([x_c0, x_s1], [y0, y1], color=col, lw=1.05, alpha=0.50, zorder=3)
-    ax1.scatter([x_c0, x_s1], [y0, y1], color=col, s=18, alpha=0.70, zorder=4)
+    ax1.plot([x_c0, x_s1], [y0, y1], color=col, lw=1.20, alpha=0.55, zorder=3)
+    ax1.scatter([x_c0, x_s1], [y0, y1], color=col, s=22, alpha=0.75, zorder=4, edgecolor='white', linewidth=0.5)
 
 # Grand Mean Trajectory
-ax1.plot([x_c0, x_s1], [mean_c0, mean_s1], color=C_DARK, lw=2.8, marker='D', markersize=6.2, zorder=6,
-         label=rf"Mean ($\Delta = {mean_diff:.2f}$ pp)")
+ax1.plot([x_c0, x_s1], [mean_c0, mean_s1], color=C_DARK, lw=3.0, marker='D', markersize=7.0, zorder=6)
 
-# End-point callout boxes
-ax1.text(x_c0 - 0.05, mean_c0, f"{mean_c0:.2f}%", ha='right', va='center', fontsize=7.8, fontweight='bold', color=C_DARK,
-         bbox=dict(boxstyle="round,pad=0.18", facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=7))
-ax1.text(x_s1 + 0.05, mean_s1, f"{mean_s1:.2f}%\n({mean_diff:+.2f} pp)", ha='left', va='center', fontsize=7.8, fontweight='bold', color=C_DARK,
-         bbox=dict(boxstyle="round,pad=0.18", facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=7))
+# Internal annotations for mean values with subtle arrows
+ax1.annotate(f"Mean: {mean_c0:.2f}%", xy=(x_c0, mean_c0), xytext=(x_c0 + 0.08, mean_c0 + 0.65),
+             fontsize=8.0, fontweight='bold', color=C_DARK,
+             arrowprops=dict(arrowstyle="->", color=C_DARK, lw=0.8),
+             bbox=dict(boxstyle="round,pad=0.20", facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=7))
 
-ax1.set_xlim(-0.38, 1.48)
-ax1.set_ylim(50.8, 60.6)
+# Positioned safely inside ax1: xytext at x_s1 - 0.48 so right edge is well inside the right spine
+ax1.annotate(f"Mean: {mean_s1:.2f}%\n({mean_diff:+.2f} pp)", xy=(x_s1, mean_s1), xytext=(x_s1 - 0.48, mean_s1 - 1.20),
+             fontsize=8.0, fontweight='bold', color=C_DARK,
+             arrowprops=dict(arrowstyle="->", color=C_DARK, lw=0.8),
+             bbox=dict(boxstyle="round,pad=0.20", facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=7))
+
+ax1.set_xlim(-0.25, 1.25)
+ax1.set_ylim(51.0, 60.5)
 ax1.set_yticks([52, 54, 56, 58, 60])
-ax1.set_yticklabels(["52%", "54%", "56%", "58%", "60%"], fontsize=8.0, fontweight='bold')
+ax1.set_yticklabels(["52%", "54%", "56%", "58%", "60%"], fontsize=8.2, fontweight='bold')
 ax1.set_xticks([x_c0, x_s1])
 ax1.set_xticklabels([r"$\mathbf{C_0}$ Continuous" + "\n(35k Updates)", r"$\mathbf{S_1}$ Auxiliary" + "\n(35k Updates)"],
-                    fontsize=8.2, fontweight='bold')
-ax1.set_ylabel("Terminal CIFAR-100 Acc. (%)", fontsize=9.0, fontweight='bold', color=C_DARK, labelpad=3.0)
-ax1.set_title("(a) Seed-Level Paired Profiles (N = 20)", fontsize=9.6, fontweight='bold', color=C_DARK, pad=7)
+                    fontsize=8.4, fontweight='bold')
+ax1.set_ylabel("Terminal CIFAR-100 Acc. (%)", fontsize=9.2, fontweight='bold', color=C_DARK, labelpad=3.0)
+ax1.set_title("(a) Seed-Level Paired Profiles (N = 20)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=8)
 
-ax1.legend(loc='upper left', frameon=True, framealpha=0.94, fontsize=7.6, edgecolor='#CBD5E1')
-ax1.grid(True, linestyle=':', alpha=0.55, color='#CBD5E1', axis='y')
+# Explanatory legend detailing the exact seed breakdown (concise labels to avoid spine collision)
+line_mean = plt.Line2D([0], [0], color=C_DARK, lw=3.0, marker='D', markersize=6.0, label=rf"Mean ($\Delta = -0.43$ pp)")
+line_pos = plt.Line2D([0], [0], color=C_GREEN, lw=1.5, marker='o', markersize=5.0, label="Gains: n = 7 (+0.64 pp)")
+line_neg = plt.Line2D([0], [0], color=C_RED, lw=1.5, marker='o', markersize=5.0, label="Drops: n = 13 (-1.01 pp)")
+ax1.legend(handles=[line_mean, line_pos, line_neg], loc='upper left', frameon=True, framealpha=0.95, fontsize=7.2, edgecolor='#CBD5E1')
+ax1.grid(True, linestyle=':', alpha=0.6, color='#CBD5E1', axis='y')
 
-# Statistical cohort summary badge
-ax1.text(0.5, 51.2, r"7 positive / 13 negative seeds ($p = 0.090$)", ha='center', va='bottom', fontsize=7.4, fontweight='bold', color=C_MUTED,
-         bbox=dict(boxstyle="round,pad=0.22", facecolor='#F8FAFC', edgecolor='#E2E8F0', lw=0.8, zorder=5))
+# Statistical takeaway badge (two lines to maintain generous margin from spines)
+ax1.text(0.5, 51.3, "13 of 20 seeds favor Continuous\n(p = 0.090, Wilcoxon)", ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_MUTED,
+         bbox=dict(boxstyle="round,pad=0.22", facecolor='#F8FAFC', edgecolor='#CBD5E1', lw=0.8, zorder=5))
 
 # --- Panel (b): Confirmatory Contrasts Forest Plot ---
 y_pos = np.arange(len(contrasts))[::-1]
-ax2.axvline(0.0, color=C_RED, linestyle='--', lw=1.2, zorder=1)
-ax2.axvspan(-0.5, 0.5, facecolor='#EAFAF1', alpha=0.45, zorder=0)
-
-# Annotation for equivalence zone at the very top of panel (b)
-ax2.text(0.0, 3.65, "Equivalence Region (±0.5 pp)", ha='center', va='bottom', fontsize=6.8, fontweight='bold', color='#27AE60')
+ax2.axvline(0.0, color=C_NULL, linestyle='--', lw=1.2, zorder=1)
+ax2.axvspan(-0.5, 0.5, facecolor='#EAFAF1', alpha=0.50, zorder=0)
+ax2.text(0.0, 3.75, "Equivalence Region (±0.5 pp)", ha='center', va='bottom', fontsize=7.2, fontweight='bold', color='#27AE60')
 
 for i, y in enumerate(y_pos):
     m = mean_diffs[i]
@@ -132,51 +145,51 @@ for i, y in enumerate(y_pos):
     pt_col = C_DARK if is_primary else C_MUTED
     
     # Parametric t CI (outer line with end caps)
-    ax2.plot([t_lo, t_hi], [y + 0.08, y + 0.08], color=col, lw=1.8, zorder=3)
-    ax2.plot([t_lo, t_lo], [y + 0.02, y + 0.14], color=col, lw=1.8, zorder=3)
-    ax2.plot([t_hi, t_hi], [y + 0.02, y + 0.14], color=col, lw=1.8, zorder=3)
+    ax2.plot([t_lo, t_hi], [y + 0.08, y + 0.08], color=col, lw=2.0, zorder=3)
+    ax2.plot([t_lo, t_lo], [y + 0.02, y + 0.14], color=col, lw=2.0, zorder=3)
+    ax2.plot([t_hi, t_hi], [y + 0.02, y + 0.14], color=col, lw=2.0, zorder=3)
     
-    # Bootstrap CI (inner thicker line)
-    ax2.plot([b_lo, b_hi], [y - 0.08, y - 0.08], color=C_PURPLE, lw=2.8, alpha=0.85, zorder=3)
+    # Bootstrap CI (inner thicker bar)
+    ax2.plot([b_lo, b_hi], [y - 0.08, y - 0.08], color=C_PURPLE, lw=3.2, alpha=0.85, zorder=3)
     
     # Point estimate
-    ax2.scatter(m, y, color=pt_col, s=44, zorder=5)
+    ax2.scatter(m, y, color=pt_col, s=50, zorder=5, edgecolor='white', linewidth=0.6)
     
     # Direct numeric tag placed cleanly above the point
     sign_m = f"{m:+.2f} pp" if m != 0 else "0.00 pp"
     if i == 1: # -0.03 pp: align right of point to preserve ample clear space before the legend
-        ax2.text(m - 0.08, y + 0.22, sign_m, ha='right', va='bottom', fontsize=7.6, fontweight='bold', color=C_DARK,
-                 bbox=dict(boxstyle="round,pad=0.14", facecolor='white', edgecolor='#E2E8F0', lw=0.7, alpha=0.95, zorder=6))
+        ax2.text(m - 0.10, y + 0.24, sign_m, ha='right', va='bottom', fontsize=7.8, fontweight='bold', color=C_DARK,
+                 bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='#E2E8F0', lw=0.8, alpha=0.95, zorder=6))
     else:
-        ax2.text(m, y + 0.22, sign_m, ha='center', va='bottom', fontsize=7.6, fontweight='bold', color=C_DARK,
-                 bbox=dict(boxstyle="round,pad=0.14", facecolor='white', edgecolor='#E2E8F0', lw=0.7, alpha=0.95, zorder=6))
+        ax2.text(m, y + 0.24, sign_m, ha='center', va='bottom', fontsize=7.8, fontweight='bold', color=C_DARK,
+                 bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='#E2E8F0', lw=0.8, alpha=0.95, zorder=6))
 
 ax2.set_yticks(y_pos)
-ax2.set_yticklabels(contrasts, fontsize=7.8, fontweight='bold')
+ax2.set_yticklabels(contrasts, fontsize=8.0, fontweight='bold')
 ax2.set_xlim(-1.45, 1.35)
-ax2.set_ylim(-0.6, 3.85)
+ax2.set_ylim(-0.6, 3.95)
 ax2.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0])
-ax2.set_xticklabels(["-1.0", "-0.5", "0.0", "+0.5", "+1.0"], fontsize=8.0, fontweight='bold')
-ax2.set_xlabel("Paired Difference in Test Accuracy (pp)", fontsize=9.0, fontweight='bold', color=C_DARK)
-ax2.set_title("(b) Confirmatory Paired Contrasts", fontsize=9.6, fontweight='bold', color=C_DARK, pad=7)
-ax2.grid(True, linestyle=':', alpha=0.55, color='#CBD5E1')
+ax2.set_xticklabels(["-1.0", "-0.5", "0.0", "+0.5", "+1.0"], fontsize=8.2, fontweight='bold')
+ax2.set_xlabel("Paired Difference in Test Accuracy (pp)", fontsize=9.2, fontweight='bold', color=C_DARK)
+ax2.set_title("(b) Confirmatory Paired Contrasts", fontsize=9.8, fontweight='bold', color=C_DARK, pad=8)
+ax2.grid(True, linestyle=':', alpha=0.6, color='#CBD5E1')
 
 # Legend placed in upper right with generous clearance
-line_t = plt.Line2D([0], [0], color=C_BLUE, lw=1.8, label="95% Paired t-CI")
-line_b = plt.Line2D([0], [0], color=C_PURPLE, lw=2.8, label="95% Bootstrap CI")
-line_z = plt.Line2D([0], [0], color=C_RED, linestyle='--', lw=1.2, label="Null (0 pp)")
-ax2.legend(handles=[line_t, line_b, line_z], loc='upper right', frameon=True, framealpha=0.94, fontsize=7.5, edgecolor='#CBD5E1')
+line_t = plt.Line2D([0], [0], color=C_BLUE, lw=2.0, label="95% Paired t-CI")
+line_b = plt.Line2D([0], [0], color=C_PURPLE, lw=3.2, label="95% Bootstrap CI")
+line_z = plt.Line2D([0], [0], color=C_NULL, linestyle='--', lw=1.2, label="Null (0 pp)")
+ax2.legend(handles=[line_t, line_b, line_z], loc='upper right', frameon=True, framealpha=0.95, fontsize=7.4, edgecolor='#CBD5E1')
 
-plt.subplots_adjust(left=0.125, right=0.98, top=0.90, bottom=0.15)
+plt.subplots_adjust(left=0.12, right=0.98, top=0.90, bottom=0.14)
 
 pdf_out = os.path.join(FIGURES_DIR, "figure_paired_contrasts_forest_plot.pdf")
 png_out = os.path.join(FIGURES_DIR, "figure_paired_contrasts_forest_plot.png")
-fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.05)
-fig.savefig(png_out, bbox_inches='tight', pad_inches=0.05, dpi=300)
+fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.07)
+fig.savefig(png_out, bbox_inches='tight', pad_inches=0.07, dpi=300)
 
 for d in [CLEAN_FIGURES_DIR]:
-    fig.savefig(os.path.join(d, "figure_paired_contrasts_forest_plot.pdf"), bbox_inches='tight', pad_inches=0.05)
-    fig.savefig(os.path.join(d, "figure_paired_contrasts_forest_plot.png"), bbox_inches='tight', pad_inches=0.05, dpi=300)
+    fig.savefig(os.path.join(d, "figure_paired_contrasts_forest_plot.pdf"), bbox_inches='tight', pad_inches=0.07)
+    fig.savefig(os.path.join(d, "figure_paired_contrasts_forest_plot.png"), bbox_inches='tight', pad_inches=0.07, dpi=300)
 
 plt.close(fig)
 print(f"Figure 2 successfully generated: {pdf_out}")
