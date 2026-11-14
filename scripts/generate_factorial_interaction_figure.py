@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
 Generate publication-grade Figure 3: Factorial Decomposition of Procedural Costs.
-Designed at native 6.5-inch width with elevated vertical height (6.5 x 3.20 in):
+Designed at native 6.5-inch width with elevated vertical height (6.5 x 3.35 in):
 - Panel (a): 2x2 Factorial Interaction Plot (Head Policy vs Momentum Policy).
-  * Clear population means with 95% t-confidence intervals (dodged slightly to prevent overlap).
+  * Population means with 95% t-confidence intervals (dodged slightly to prevent overlap).
   * Clean, borderless horizontal legend placed OUTSIDE the axes above the plot frame.
-  * Individual seed trajectories displayed in subtle background alpha.
-  * Explicit parallel response annotation positioned in lower whitespace.
+  * Direct numeric value tags positioned cleanly above (green) and below (blue) markers.
+  * Statistical finding integrated cleanly into panel header subtitle (zero bottom badges).
 - Panel (b): Marginal Main Effects Forest Plot (Head Substitution, Momentum Reset, Interaction).
   * 3 spacious contrast rows with ample vertical clearance.
   * Clean numeric badges, green shaded equivalence region (±0.5 pp), and outside reference legend.
+  * Wide gutter separation ensuring Panel (b) y-labels never encroach into Panel (a).
 
 Typography:
-- Panel titles: 9.5 pt bold
+- Panel titles: 8.8--9.2 pt bold
 - Axis labels: 9.0 pt bold
 - Tick labels: 8.0--8.2 pt bold
 - Value tags & legend: 7.4--7.8 pt bold
@@ -72,56 +73,59 @@ effects = [
     (r"Factorial Interaction ($\Delta_{\mathrm{int}}$)" + "\n" + r"($F = 0.002, p = 0.967$)", diff_int, C_PURPLE)
 ]
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.20), dpi=300,
-                               gridspec_kw={'width_ratios': [1.0, 1.25], 'wspace': 0.68})
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.35), dpi=300,
+                               gridspec_kw={'width_ratios': [0.92, 1.25], 'wspace': 0.88})
 
 # =========================================================================
 # Panel (a): 2x2 Factorial Interaction Response
 # =========================================================================
-# Subtle horizontal offset (+-0.025) so error bars and trajectories do not directly collide
-x_b = np.array([0.0 - 0.025, 1.0 - 0.025])
-x_g = np.array([0.0 + 0.025, 1.0 + 0.025])
+# Small horizontal offset (+-0.03) so error bars and seed lines do not overlap
+x_b = np.array([0.0 - 0.03, 1.0 - 0.03])
+x_g = np.array([0.0 + 0.03, 1.0 + 0.03])
 x_ticks = [0.0, 1.0]
 x_labels = [r"Retained Head ($h_A$)" + "\n(Continuous)", r"Temp Head ($h_{\mathrm{temp}}$)" + "\n(Substituted)"]
 
-# Individual seeds (subtle)
+# Individual seeds (subtle background trajectories)
 for i in range(n):
-    ax1.plot(x_b, [f00[i], f10[i]], color=C_BLUE, alpha=0.20, lw=0.9, zorder=2)
-    ax1.plot(x_g, [f01[i], f11[i]], color=C_GREEN, alpha=0.20, lw=0.9, linestyle='--', zorder=2)
+    ax1.plot(x_b, [f00[i], f10[i]], color=C_BLUE, alpha=0.18, lw=0.9, zorder=2)
+    ax1.plot(x_g, [f01[i], f11[i]], color=C_GREEN, alpha=0.18, lw=0.9, linestyle='--', zorder=2)
 
-# Population means with 95% t-confidence intervals
+# Population mean trajectories with 95% t-confidence intervals
 ax1.errorbar(x_b, [m_f00, m_f10], yerr=[se_f00 * t_crit, se_f10 * t_crit],
-             fmt='o-', color=C_BLUE, lw=2.2, markersize=6.5, capsize=4.5, capthick=1.4,
+             fmt='o-', color=C_BLUE, lw=2.4, markersize=7.0, capsize=4.0, capthick=1.4,
              label=r"Continuous Mom ($\mathbf{v}$ intact)", zorder=5)
 ax1.errorbar(x_g, [m_f01, m_f11], yerr=[se_f01 * t_crit, se_f11 * t_crit],
-             fmt='s--', color=C_GREEN, lw=2.2, markersize=6.5, capsize=4.5, capthick=1.4,
+             fmt='s--', color=C_GREEN, lw=2.4, markersize=7.0, capsize=4.0, capthick=1.4,
              label=r"Reset Mom ($\mathbf{v} \leftarrow \mathbf{0}$)", zorder=5)
 
-# Value annotations with clean spacing
-ax1.text(x_b[0] - 0.06, m_f00, f"{m_f00:.2f}%", ha='right', va='center', fontsize=7.8, fontweight='bold', color=C_BLUE)
-ax1.text(x_g[0] + 0.06, m_f01, f"{m_f01:.2f}%", ha='left', va='center', fontsize=7.8, fontweight='bold', color=C_GREEN)
-ax1.text(x_b[1] - 0.06, m_f10, f"{m_f10:.2f}%", ha='right', va='center', fontsize=7.8, fontweight='bold', color=C_BLUE)
-ax1.text(x_g[1] + 0.06, m_f11, f"{m_f11:.2f}%", ha='left', va='center', fontsize=7.8, fontweight='bold', color=C_GREEN)
+# Value annotations: Green above marker, Blue below marker! ZERO COLLISION!
+ax1.text(x_g[0], m_f01 + 0.32, f"{m_f01:.2f}%", ha='center', va='bottom', fontsize=7.8, fontweight='bold', color=C_GREEN,
+         bbox=dict(boxstyle='round,pad=0.12', facecolor='white', edgecolor='none', alpha=0.92, zorder=6))
+ax1.text(x_b[0], m_f00 - 0.32, f"{m_f00:.2f}%", ha='center', va='top', fontsize=7.8, fontweight='bold', color=C_BLUE,
+         bbox=dict(boxstyle='round,pad=0.12', facecolor='white', edgecolor='none', alpha=0.92, zorder=6))
 
-ax1.set_xlim(-0.30, 1.30)
-ax1.set_ylim(51.8, 59.2)
+ax1.text(x_g[1], m_f11 + 0.32, f"{m_f11:.2f}%", ha='center', va='bottom', fontsize=7.8, fontweight='bold', color=C_GREEN,
+         bbox=dict(boxstyle='round,pad=0.12', facecolor='white', edgecolor='none', alpha=0.92, zorder=6))
+ax1.text(x_b[1], m_f10 - 0.32, f"{m_f10:.2f}%", ha='center', va='top', fontsize=7.8, fontweight='bold', color=C_BLUE,
+         bbox=dict(boxstyle='round,pad=0.12', facecolor='white', edgecolor='none', alpha=0.92, zorder=6))
+
+ax1.set_xlim(-0.32, 1.32)
+ax1.set_ylim(51.2, 59.8)
 ax1.set_yticks([52, 54, 56, 58])
 ax1.set_yticklabels(["52%", "54%", "56%", "58%"], fontsize=8.2, fontweight='bold')
 ax1.set_xticks(x_ticks)
 ax1.set_xticklabels(x_labels, fontsize=8.2, fontweight='bold')
 ax1.set_ylabel("CIFAR-100 Test Accuracy (%)", fontsize=9.0, fontweight='bold', color=C_DARK)
-ax1.set_title("(a) Factorial Interaction Response", fontsize=9.5, fontweight='bold', color=C_DARK, pad=26)
+
+# Clean 2-line title placing statistical finding in header; NO BADGES AT THE BOTTOM!
+ax1.set_title(r"(a) Factorial Interaction Response" + "\n" + r"Parallel curves: Zero interaction ($\Delta_{\mathrm{int}} = +0.02$ pp, $p = 0.967$)",
+              fontsize=8.8, fontweight='bold', color=C_DARK, pad=28)
 
 # Clean horizontal legend placed OUTSIDE above plot frame
 ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False, fontsize=7.4)
 ax1.grid(True, linestyle=':', alpha=0.25, color='#CBD5E1', axis='y')
 ax1.spines['top'].set_visible(False)
 ax1.spines['right'].set_visible(False)
-
-# Bottom note on parallel response
-ax1.text(0.5, 52.1, r"Parallel curves: Interaction $\Delta_{\mathrm{int}} = +0.02$ pp ($p = 0.967$)",
-         ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_MUTED,
-         bbox=dict(boxstyle='round,pad=0.22', facecolor='white', edgecolor='#E2E8F0', lw=0.6, alpha=0.95))
 
 # =========================================================================
 # Panel (b): Marginal Main Effects Forest Plot
@@ -162,7 +166,7 @@ ax2.set_ylim(-0.6, 2.9)
 ax2.set_xticks([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0])
 ax2.set_xticklabels(["-3.0", "-2.0", "-1.0", "0.0", "+1.0", "+2.0"], fontsize=8.2, fontweight='bold')
 ax2.set_xlabel("Marginal Paired Effect (pp)", fontsize=9.0, fontweight='bold', color=C_DARK)
-ax2.set_title("(b) Marginal Contrasts (95% CI)", fontsize=9.5, fontweight='bold', color=C_DARK, pad=26)
+ax2.set_title("(b) Marginal Contrasts (95% CI)", fontsize=8.8, fontweight='bold', color=C_DARK, pad=28)
 ax2.grid(True, linestyle=':', alpha=0.25, color='#CBD5E1')
 ax2.spines['top'].set_visible(False)
 ax2.spines['right'].set_visible(False)
