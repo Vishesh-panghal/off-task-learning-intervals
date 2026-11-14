@@ -39,12 +39,13 @@ else:
 for d in [FIGURES_DIR, CLEAN_FIGURES_DIR]:
     os.makedirs(d, exist_ok=True)
 
-C_BLUE = '#1F77B4'      # Primary Contrast / C0 Baseline
-C_GREEN = '#27AE60'     # Positive seeds (improved)
-C_RED = '#E74C3C'       # Negative seeds (deteriorated)
-C_NULL = '#D62728'      # Null reference line
-C_PURPLE = '#7D3C98'    # Bootstrap CI
+C_BLUE = '#1F77B4'      # Paper primary Blue (C0 Baseline and Primary Contrast)
 C_DARK = '#0F172A'      # Slate 900
+C_GRAY = '#64748B'      # Slate 500 for seed markers
+C_GRAY_LINE = '#94A3B8' # Slate 400 for neutral seed trajectories
+C_NULL = '#D62728'      # Null reference line
+C_RED = '#E74C3C'       # Critical rejection region in Supplementary Figure S1
+C_PURPLE = '#7D3C98'    # Bootstrap CI
 C_MUTED = '#475569'     # Slate 600
 
 # Seed data from Table 2 (N = 20 Paired Seeds)
@@ -82,9 +83,9 @@ boot_ci_high = [+0.0200, +0.6700, +0.2400, +0.9200]
 # =========================================================================
 # MAIN MANUSCRIPT FIGURE 2: 2 Panels with maximum vertical clarity (3.40 in)
 # =========================================================================
-# Subtle deterministic dodge for tied and closely clustered points (< 0.12% apart)
+# Subtle deterministic dodge for tied and closely clustered points (< 0.10% apart)
 # Ensures every individual seed dot has a visible, non-overlapping circular boundary
-def dodge_close_points(vals, center_x, step=0.040, tol=0.12):
+def dodge_close_points(vals, center_x, step=0.035, tol=0.10):
     n = len(vals)
     xs = np.full(n, center_x)
     order = np.argsort(vals)
@@ -107,54 +108,44 @@ def dodge_close_points(vals, center_x, step=0.040, tol=0.12):
                 xs[s_idx] = center_x + shifts[j]
     return xs
 
-xs_c0 = dodge_close_points(c0_35k, 0.0, step=0.040, tol=0.12)
-xs_s1 = dodge_close_points(s1_35k, 1.0, step=0.040, tol=0.12)
+xs_c0 = dodge_close_points(c0_35k, 0.0, step=0.035, tol=0.10)
+xs_s1 = dodge_close_points(s1_35k, 1.0, step=0.035, tol=0.10)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.40), dpi=300,
-                               gridspec_kw={'width_ratios': [0.90, 1.25], 'wspace': 0.85})
+                               gridspec_kw={'width_ratios': [0.90, 1.25], 'wspace': 0.88})
 
 # --- Panel (a): Seed-Level Paired Slopes ---
+# 1. Neutral, transparent individual trajectories with white-core markers
 for i in range(len(seeds)):
-    col = C_GREEN if diffs_primary[i] >= 0 else C_RED
-    # Clean connecting trajectory line
-    ax1.plot([xs_c0[i], xs_s1[i]], [c0_35k[i], s1_35k[i]], color=col, lw=1.20, alpha=0.50, zorder=3)
-    # Open ring markers with white interior: crisp, non-occluding boundaries
-    ax1.scatter(xs_c0[i], c0_35k[i], facecolor='white', edgecolor=col, linewidth=1.3, s=26, alpha=0.95, zorder=4)
-    ax1.scatter(xs_s1[i], s1_35k[i], facecolor='white', edgecolor=col, linewidth=1.3, s=26, alpha=0.95, zorder=4)
+    ax1.plot([xs_c0[i], xs_s1[i]], [c0_35k[i], s1_35k[i]], color=C_GRAY_LINE, lw=1.20, alpha=0.45, zorder=2)
+    ax1.scatter(xs_c0[i], c0_35k[i], facecolor='white', edgecolor=C_GRAY, linewidth=1.1, s=20, alpha=0.90, zorder=3)
+    ax1.scatter(xs_s1[i], s1_35k[i], facecolor='white', edgecolor=C_GRAY, linewidth=1.1, s=20, alpha=0.90, zorder=3)
 
-# Grand Mean Trajectory
-ax1.plot([0.0, 1.0], [mean_c0, mean_s1], color=C_DARK, lw=3.2, zorder=6)
-# Distinct white diamond with dark bold border
-ax1.scatter([0.0, 1.0], [mean_c0, mean_s1], marker='D', s=48, facecolor='white', edgecolor=C_DARK, linewidth=2.0, zorder=7)
+# 2. Bold Primary Blue Mean Trajectory (matches paper palette)
+ax1.plot([0.0, 1.0], [mean_c0, mean_s1], color=C_BLUE, lw=3.8, marker='D', markersize=8.0,
+         markerfacecolor=C_BLUE, markeredgecolor='white', markeredgewidth=1.8, zorder=5)
 
-ax1.set_xlim(-0.25, 1.25)
-ax1.set_ylim(51.6, 59.6)
+# End labels for the mean line placed beside the markers
+ax1.text(-0.08, mean_c0, f"{mean_c0:.2f}%", ha='right', va='center', fontsize=8.2, fontweight='bold', color=C_BLUE, zorder=6)
+ax1.text(1.08, mean_s1, f"{mean_s1:.2f}%", ha='left', va='center', fontsize=8.2, fontweight='bold', color=C_BLUE, zorder=6)
+
+ax1.set_xlim(-0.30, 1.30)
+ax1.set_ylim(51.6, 59.8)
 ax1.set_yticks([52, 54, 56, 58])
 ax1.set_yticklabels(["52%", "54%", "56%", "58%"], fontsize=8.2, fontweight='bold')
 ax1.set_xticks([0.0, 1.0])
-ax1.set_xticklabels([
-    r"$\mathbf{C_0}$ Continuous" + f"\nMean: {mean_c0:.2f}%\n(35k Updates)",
-    r"$\mathbf{S_1}$ Auxiliary" + f"\nMean: {mean_s1:.2f}%\n(35k Updates)"
-], fontsize=8.0, fontweight='bold')
-ax1.set_ylabel("Terminal CIFAR-100 Acc. (%)", fontsize=9.2, fontweight='bold', color=C_DARK, labelpad=3.0)
-ax1.set_title("(a) Seed-Level Paired Profiles (N = 20)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=8)
+ax1.set_xticklabels([r"$\mathbf{C_0}$ Continuous", r"$\mathbf{S_1}$ Auxiliary"], fontsize=9.0, fontweight='bold')
+ax1.set_ylabel("Terminal Test Accuracy (%)", fontsize=9.2, fontweight='bold', color=C_DARK, labelpad=4.0)
+ax1.set_title(r"(a) Paired Test Accuracy Profiles ($N = 20$)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=10)
 
-# Explanatory legend detailing the exact seed breakdown
-line_mean = plt.Line2D([0], [0], color=C_DARK, lw=3.0, marker='D', markersize=5.5,
-                       markerfacecolor='white', markeredgecolor=C_DARK, markeredgewidth=1.5,
-                       label=rf"Mean ($\Delta = -0.43$ pp)")
-line_pos = plt.Line2D([0], [0], color=C_GREEN, lw=1.5, marker='o', markersize=5.0,
-                      markerfacecolor='white', markeredgecolor=C_GREEN, markeredgewidth=1.2,
-                      label="Gains: n = 7 (+0.64 pp)")
-line_neg = plt.Line2D([0], [0], color=C_RED, lw=1.5, marker='o', markersize=5.0,
-                      markerfacecolor='white', markeredgecolor=C_RED, markeredgewidth=1.2,
-                      label="Drops: n = 13 (-1.01 pp)")
-ax1.legend(handles=[line_mean, line_pos, line_neg], loc='upper left', frameon=True, framealpha=0.95, fontsize=7.2, edgecolor='#CBD5E1')
-ax1.grid(True, linestyle=':', alpha=0.6, color='#CBD5E1', axis='y')
+ax1.grid(True, linestyle=':', alpha=0.25, color='#CBD5E1', axis='y')
+ax1.spines['top'].set_visible(False)
+ax1.spines['right'].set_visible(False)
 
-# Statistical takeaway badge
-ax1.text(0.5, 51.8, "13 of 20 seeds favor Continuous\n(p = 0.090, Wilcoxon)", ha='center', va='bottom', fontsize=7.2, fontweight='bold', color=C_MUTED,
-         bbox=dict(boxstyle="round,pad=0.22", facecolor='#F8FAFC', edgecolor='#CBD5E1', lw=0.8, zorder=5))
+# Clean statistical annotation badge at top-center in empty region (Section 4.4 paired t-test)
+ax1.text(0.5, 59.3, "13/20 seeds favor Continuous\n" + rf"Mean $\Delta = -0.43$ pp ($p = 0.090$, Paired $t$)",
+         ha='center', va='top', fontsize=7.6, fontweight='bold', color=C_DARK,
+         bbox=dict(boxstyle='round,pad=0.28', facecolor='white', edgecolor='#CBD5E1', lw=0.8, alpha=0.95, zorder=6))
 
 # --- Panel (b): Confirmatory Contrasts Forest Plot ---
 y_pos = np.arange(len(contrasts))[::-1]
@@ -168,7 +159,7 @@ for i, y in enumerate(y_pos):
     b_lo, b_hi = boot_ci_low[i], boot_ci_high[i]
     is_primary = (i == 0)
     col = C_BLUE if is_primary else C_MUTED
-    pt_col = C_DARK if is_primary else C_MUTED
+    pt_col = C_BLUE if is_primary else C_MUTED
     
     # Parametric t CI (outer line with end caps)
     ax2.plot([t_lo, t_hi], [y + 0.08, y + 0.08], color=col, lw=2.0, zorder=3)
@@ -198,7 +189,10 @@ ax2.set_xticks([-1.0, -0.5, 0.0, 0.5, 1.0])
 ax2.set_xticklabels(["-1.0", "-0.5", "0.0", "+0.5", "+1.0"], fontsize=8.2, fontweight='bold')
 ax2.set_xlabel("Paired Difference in Test Accuracy (pp)", fontsize=9.2, fontweight='bold', color=C_DARK)
 ax2.set_title("(b) Confirmatory Paired Contrasts", fontsize=9.8, fontweight='bold', color=C_DARK, pad=8)
-ax2.grid(True, linestyle=':', alpha=0.6, color='#CBD5E1')
+ax2.grid(True, linestyle=':', alpha=0.25, color='#CBD5E1')
+
+ax2.spines['top'].set_visible(False)
+ax2.spines['right'].set_visible(False)
 
 # Legend placed in upper right with generous clearance
 line_t = plt.Line2D([0], [0], color=C_BLUE, lw=2.0, label="95% Paired t-CI")
