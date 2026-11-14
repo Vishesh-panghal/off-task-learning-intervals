@@ -299,7 +299,7 @@ $\bm{B_4 - B_1}$          & 10 & $+0.00$ & [$-1.04$, $+1.22$] & $0.9949$ & $+0.0
 To evaluate whether findings generalize beyond convolutional inductive biases, we evaluate a Compact Vision Transformer (CViT). The CViT operates on non-overlapping $4 \times 4$ patches with embedding dimension $d = 256$, 8 transformer blocks, 8 attention heads, and MLP expansion factor 2, followed by Layer Normalization and mean pooling.
 
 \begin{table*}[!ht]
-\caption{Confirmatory comparison of Compact Vision Transformer (CViT) models across $N = 5$ random seeds (seeds 3001--3005, 15 total runs). Contrasts use two-sided paired Student's $t$-tests with Bonferroni-adjusted $\alpha_{\mathrm{adj}} = 0.025$.}\label{tab:supp_vit_summary}
+\caption{Confirmatory comparison of Compact Vision Transformer (CViT) models across $N = 5$ random seeds (seeds 3001--3005, 15 total runs) under matched computational ceilings ($35{,}000$ updates). Contrasts use two-sided paired Student's $t$-tests ($4$ degrees of freedom). All differences are calculated directly from seed-level measurements in Table~\ref{tab:supp_vit_raw}.}\label{tab:supp_vit_summary}
 \centering
 \small
 \resizebox{\linewidth}{!}{%
@@ -307,9 +307,15 @@ To evaluate whether findings generalize beyond convolutional inductive biases, w
 \toprule
 \textbf{Contrast Estimand} & \textbf{Mean Diff. (pp)} & \textbf{Paired SD} & \textbf{95\% Paired $t$-CI} & $t(4)$ & $p$-value & $d_z$ \\
 \midrule
-Detour vs. Continuous ($B_4 - B_0$) & $-0.06$ & 0.49 & [$-0.67$, $+0.55$] & $-0.26$ & 0.806 & $-0.12$ \\
-Clean Reset vs. Continuous ($B_1 - B_0$) & $+0.21$ & 0.38 & [$-0.26$, $+0.68$] & $+1.23$ & 0.286 & $+0.55$ \\
-Detour vs. Clean Reset ($B_4 - B_1$) & $-0.27$ & 0.44 & [$-0.81$, $+0.28$] & $-1.37$ & 0.244 & $-0.61$ \\
+\multicolumn{7}{l}{\textit{Terminal Test Accuracy Contrasts ($\vtheta_3$):}} \\
+Detour vs.\ Continuous ($B_4 - B_0$) & $+0.44$ & 0.63 & [$-0.33$, $+1.22$] & $+1.58$ & 0.189 & $+0.71$ \\
+Clean Reset vs.\ Continuous ($B_1 - B_0$) & $+0.38$ & 0.50 & [$-0.24$, $+1.00$] & $+1.68$ & 0.168 & $+0.75$ \\
+\textbf{Detour vs.\ Clean Reset ($B_4 - B_1$)} & $\bm{+0.07}$ & \textbf{0.44} & [$\bm{-0.48}$, $\bm{+0.61}$] & $\bm{+0.34}$ & \textbf{0.754} & $\bm{+0.15}$ \\
+\midrule
+\multicolumn{7}{l}{\textit{Terminal Validation Accuracy Contrasts ($\vtheta_3$):}} \\
+Detour vs.\ Continuous ($B_4 - B_0$) & $+0.70$ & 0.62 & [$-0.08$, $+1.47$] & $+2.50$ & 0.067 & $+1.12$ \\
+Clean Reset vs.\ Continuous ($B_1 - B_0$) & $+0.31$ & 1.16 & [$-1.13$, $+1.75$] & $+0.60$ & 0.580 & $+0.27$ \\
+Detour vs.\ Clean Reset ($B_4 - B_1$) & $+0.38$ & 0.93 & [$-0.77$, $+1.54$] & $+0.92$ & 0.408 & $+0.41$ \\
 \bottomrule
 \end{tabular}%
 }
@@ -443,7 +449,7 @@ SCC  & Squamous Cell Carcinoma & 502 & 63 & 63 & 628 \\
 \begin{figure*}[!ht]
 \centering
 \includegraphics[width=0.82\linewidth]{figures/figure_applied_manifold_cumulative_and_c0.pdf}
-\caption{\textbf{Supplementary Manifold Geometry Diagnostics on ISIC 2019.} (Left) Cumulative spectral energy distribution across singular value dimensions $k$, showing acute variance compression under the $S_1$ detour at $\bm{\theta}_2$ (red) compared to preserved variance in continuous training $C_0$ (purple). (Right) 2D t-SNE projection of clinical test lesions under uninterrupted training ($C_0$) at step 7k, demonstrating preserved diagnostic cluster structure.}\label{fig:supp_applied_manifold_cumulative}
+\caption{\textbf{Supplementary Manifold Geometry Diagnostics on ISIC 2019.} (Left) Cumulative spectral energy distribution across singular value dimensions $k$, showing acute variance compression under the $S_1$ detour at $\bm{\theta}_2$ (red) compared to preserved variance in continuous training $C_0$ (purple). (Right) 2D t-SNE projection of clinical validation lesions under uninterrupted training ($C_0$) at step 7k, demonstrating preserved diagnostic cluster structure.}\label{fig:supp_applied_manifold_cumulative}
 \end{figure*}
 
 
