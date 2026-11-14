@@ -61,7 +61,7 @@ prb_c3 = np.array([52.8, 60.9, 63.0])
 prb_s1 = np.array([52.8, 21.9, 62.7])
 
 # Set up figure at native 6.5 in width (TMLR full-width) and 2.15 in height
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(6.5, 2.15), dpi=300,
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(6.5, 2.80), dpi=300,
                                    gridspec_kw={'wspace': 0.38})
 
 def setup_axis(ax, title, ylabel, ylim, yticks, yticklabels):
@@ -121,7 +121,7 @@ handles, labels = ax1.get_legend_handles_labels()
 fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.98),
            ncol=3, frameon=False, fontsize=7.6)
 
-plt.subplots_adjust(left=0.08, right=0.98, top=0.82, bottom=0.18)
+plt.subplots_adjust(left=0.08, right=0.98, top=0.84, bottom=0.16)
 
 pdf_out = os.path.join(FIGURES_DIR, "figure_longitudinal_representation_dynamics.pdf")
 png_out = os.path.join(FIGURES_DIR, "figure_longitudinal_representation_dynamics.png")
