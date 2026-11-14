@@ -135,8 +135,8 @@ row_colors = [C_RED, C_GREEN, C_PURPLE]
 ax2.axvspan(-0.5, 0.5, facecolor='#2ca02c', alpha=0.07, zorder=0)
 ax2.text(0.0, 2.50, "Equivalence Band (±0.5 pp)", color='#2d7f36', ha='center', va='bottom', fontsize=7.2, fontweight='medium')
 
-# Zero reference line
-ax2.axvline(0.0, color='#64748b', linestyle='--', lw=1.0, alpha=0.8, zorder=1)
+# Zero reference line (spans all data rows and stops below the header label to eliminate overlap)
+ax2.vlines(0.0, ymin=-0.45, ymax=2.32, color='#64748b', linestyle='--', lw=1.0, alpha=0.8, zorder=1)
 
 # Horizontal error bars
 for i in range(3):
