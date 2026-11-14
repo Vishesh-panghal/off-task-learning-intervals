@@ -278,7 +278,7 @@ To evaluate how task similarity shapes representation drift and recovery, we tes
 \end{figure*}
 
 \paragraph{Ablations and Architectural Generality (CViT):}
-Ablating detour timing (step 10k vs.\ 15k) and duration (2.5k vs.\ 5k updates) confirms that disruption grows with length but remains reversible upon target retraining. Replicating the protocol across five independent random seeds on an 8-layer Compact Vision Transformer (CViT) yields $43.33\% \pm 1.83\%$ test accuracy under continuous baseline $B_0$, $43.71\% \pm 1.60\%$ under clean reset $B_1$, and $43.77\% \pm 1.77\%$ under auxiliary detour $B_4$. The decisive net transfer contrast ($B_4 - B_1$) is $+0.07$ pp ($95\%$ CI [$-0.48$, $+0.61$] pp, $t(4) = 0.34, p = 0.754$), confirming that the absence of positive transfer and rapid recovery generalise beyond convolutional inductive bias (Supplementary Material Section~D, Tables~S7 and S8).
+Ablating detour timing (step 10k vs.\ 15k) and duration (2.5k vs.\ 5k updates) confirms that disruption grows with length but remains reversible upon target retraining. Replicating the protocol across five independent random seeds on an 8-layer Compact Vision Transformer (CViT) yields $43.33\% \pm 1.83\%$ test accuracy under continuous baseline $B_0$, $43.71\% \pm 1.62\%$ under clean reset $B_1$, and $43.77\% \pm 1.71\%$ under auxiliary detour $B_4$. The decisive net transfer contrast ($B_4 - B_1$) is $+0.07$ pp ($95\%$ CI [$-0.48$, $+0.61$] pp, $t(4) = 0.34, p = 0.754$), confirming that the absence of positive transfer and rapid recovery generalise beyond convolutional inductive bias (Supplementary Material Section~D, Tables~S7 and S8).
 
 \section{Regime 2: Applied Vision Fine-Tuning in Clinical Dermoscopy}\label{sec:applied_finetuning}
 

@@ -31,8 +31,12 @@ ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..")) if os.path.basename(BAS
 
 FIGURE_DIRS = [
     os.path.join(BASE_DIR, "figures"),
+    os.path.join(BASE_DIR, "tmlr", "figures"),
     os.path.join(ROOT_DIR, "figures"),
-    os.path.join(ROOT_DIR, "clean_repo", "figures")
+    os.path.join(ROOT_DIR, "clean_repo", "figures"),
+    os.path.join(ROOT_DIR, "clean_repo", "tmlr", "figures"),
+    os.path.join(ROOT_DIR, "tmlr2", "figures"),
+    os.path.join(ROOT_DIR, "tmlr_submission_package", "figures"),
 ]
 FIGURE_DIRS = list(dict.fromkeys([d for d in FIGURE_DIRS if os.path.exists(os.path.dirname(d))]))
 for d in FIGURE_DIRS:
@@ -193,7 +197,7 @@ print("Figure 6 successfully generated.")
 # =========================================================================
 # SUPPLEMENTARY FIGURE S2: Longitudinal Effective Rank on ISIC 2019
 # =========================================================================
-fig_s, ax_s = plt.subplots(figsize=(4.5, 2.5), dpi=300)
+fig_s, ax_s = plt.subplots(figsize=(5.4, 2.7), dpi=300)
 x_p1, x_p2, x_p3 = 1.0, 2.0, 3.0
 xs_eff = [x_p1, x_p2, x_p3]
 
@@ -205,15 +209,17 @@ ax_s.plot(xs_eff, m_eff_c0, color=C_BLUE, lw=1.8, marker='o', markersize=4.5, la
 ax_s.plot(xs_eff, m_eff_c3, color=C_PURPLE, lw=1.8, linestyle='--', marker='s', markersize=4.5, label=r"$C_3$ Reset Ctrl")
 ax_s.plot(xs_eff, m_eff_s1, color=C_RED, lw=2.0, marker='D', markersize=4.5, label=r"$S_1$ Auxiliary Detour")
 
-ax_s.text(x_p2, m_eff_s1[1] - 35, f"{m_eff_s1[1]:.1f}\n(-359 dims, p < 10^-9)", ha='center', va='top', fontsize=7.2, fontweight='medium', color=C_RED)
-ax_s.text(x_p3, m_eff_s1[2] - 35, f"{m_eff_s1[2]:.1f}\n(Recovered)", ha='center', va='top', fontsize=7.2, fontweight='medium', color=C_RED)
+# S1 Phase 2 text placed cleanly above the point in open space, avoiding horizontal axis
+ax_s.text(x_p2, m_eff_s1[1] + 35, f"{m_eff_s1[1]:.1f}\n(-359 dims, $p < 10^{{-9}}$)", ha='center', va='bottom', fontsize=7.5, fontweight='semibold', color=C_RED)
+ax_s.text(x_p3 + 0.06, m_eff_s1[2], f"{m_eff_s1[2]:.1f}\n(Recovered)", ha='left', va='center', fontsize=7.5, fontweight='semibold', color=C_RED)
 
 ax_s.set_xticks(xs_eff)
 ax_s.set_xticklabels([r"Phase 1 ($\boldsymbol{\theta}_1$, 5k)", r"Phase 2 ($\boldsymbol{\theta}_2$, 7k)", r"Phase 3 ($\boldsymbol{\theta}_3$, 12k)"],
-                     fontsize=8.0)
+                     fontsize=8.2)
+ax_s.set_xlim(0.8, 3.45)
 ax_s.set_ylabel("Effective Rank (Dimensions)", fontsize=8.6, color=C_DARK)
 ax_s.set_title("Clinical Feature Dimensionality Dynamics (ISIC 2019)", fontsize=9.2, fontweight='semibold', color=C_DARK)
-ax_s.set_ylim(700, 1250)
+ax_s.set_ylim(680, 1260)
 ax_s.grid(axis='y', linestyle='--', alpha=0.35, color='#cbd5e1')
 sns.despine(ax=ax_s, trim=False)
 ax_s.legend(loc='lower left', frameon=False, fontsize=7.5)
