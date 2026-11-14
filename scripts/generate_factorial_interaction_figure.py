@@ -1,24 +1,21 @@
 #!/usr/bin/env python3
 """
 Generate publication-grade Figure 3: Factorial Decomposition of Procedural Costs.
-Designed at native 6.5-inch width (6.5 x 3.15 in) following top-tier journal aesthetics:
+Authored in authentic Seaborn statistical style (sns.set_theme(style="ticks")):
 - Panel (a): Factorial Interaction Plot.
-  * Clean population mean trajectories with 95% t-confidence intervals (faint seed lines removed).
-  * Zoomed y-axis (53.2--58.6%) to highlight slope parallelism.
-  * Numerical annotations positioned cleanly with white protective backing.
-  * Clean, borderless horizontal legend placed OUTSIDE above the plot frame (zero inside collisions).
-  * Simple, elegant title: "(a) Factorial Interaction".
+  * Subtle individual seed trajectories (N = 6 paired seeds) showing raw empirical data.
+  * Clean population mean trajectories with 95% t-confidence intervals (Seaborn Deep palette).
+  * Natural, unboxed numeric labels without artificial rounded bounding boxes.
+  * Classic Seaborn legend situated in natural upper-right whitespace (zero data collisions).
 - Panel (b): Marginal Contrasts Forest Plot (95% CI).
-  * 3 spacious contrast rows guided by subtle horizontal gridlines.
-  * Consistent numeric annotations centered cleanly above markers.
-  * Green shaded Equivalence Region (±0.5 pp) with compact header text.
-  * Self-explanatory vertical dashed Null line (redundant null legend removed).
+  * 3 spacious contrast rows with clean horizontal error bars and point estimates.
+  * Subtle, desaturated equivalence band (±0.5 pp) and zero reference line.
+  * Clean numeric annotations directly above markers in matching palette colors.
+  * L-shaped despined frames with outward ticks and soft dashed horizontal grid.
 
-Typography:
-- Panel titles: 9.8 pt bold
-- Axis labels: 9.0 pt bold
-- Tick labels: 8.0--8.2 pt bold
-- Value tags & legend: 7.6--7.8 pt bold
+Typography & Design:
+- Genuine Seaborn Deep palette: #4c72b0 (blue), #55a868 (green), #c44e52 (coral), #8172b3 (purple).
+- Standard academic hierarchy: semibold titles, medium axis labels, normal weight ticks/values.
 """
 
 import os
@@ -27,9 +24,11 @@ from scipy import stats
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'sans-serif']
-plt.rcParams['font.family'] = 'sans-serif'
+# Set authentic Seaborn publication theme
+sns.set_theme(style="ticks", font="sans-serif")
+plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'DejaVu Sans', 'sans-serif']
 plt.rcParams['mathtext.fontset'] = 'cm'
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -42,12 +41,13 @@ else:
 for d in [FIGURES_DIR, CLEAN_FIGURES_DIR]:
     os.makedirs(d, exist_ok=True)
 
-C_BLUE = '#1F77B4'
-C_GREEN = '#2CA02C'
-C_RED = '#D62728'
-C_PURPLE = '#7D3C98'
-C_DARK = '#0F172A'
-C_MUTED = '#475569'
+# Seaborn Deep Palette
+palette = sns.color_palette("deep")
+C_BLUE = palette[0]    # #4c72b0
+C_GREEN = palette[2]   # #55a868
+C_RED = palette[3]     # #c44e52
+C_PURPLE = palette[4]  # #8172b3
+C_DARK = '#1e293b'     # Slate 800 for clean text
 
 # Data from Table 3 (N = 6 paired seeds)
 f00 = np.array([55.38, 57.19, 57.98, 55.85, 56.52, 55.01])  # Retained Head, Continuous Mom
@@ -69,123 +69,109 @@ diff_head = 0.5 * ((f10 - f00) + (f11 - f01))
 diff_mom = 0.5 * ((f01 - f00) + (f11 - f10))
 diff_int = (f11 - f10) - (f01 - f00)
 
-effects = [
-    (r"Head Substitution ($\Delta_{\mathrm{head}}$)" + "\n" + r"($F = 24.95, p = 0.004$)", diff_head, C_RED),
-    (r"Momentum Reset ($\Delta_{\mathrm{mom}}$)" + "\n" + r"($F = 1.47, p = 0.279$)", diff_mom, C_GREEN),
-    (r"Factorial Interaction ($\Delta_{\mathrm{int}}$)" + "\n" + r"($F = 0.002, p = 0.967$)", diff_int, C_PURPLE)
-]
-
-# Set up figure with native 6.5 in width and 3.15 in height
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.15), dpi=300,
-                               gridspec_kw={'width_ratios': [1.0, 1.25], 'wspace': 0.75})
+# Set up figure at native 6.5 in width (TMLR full-width) and 3.0 in height
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 3.0), dpi=300,
+                               gridspec_kw={'width_ratios': [1.05, 1.25], 'wspace': 0.65})
 
 # =========================================================================
-# Panel (a): Factorial Interaction
+# Panel (a): Factorial Interaction (Authentic Seaborn Design)
 # =========================================================================
-x = [0.0, 1.0]
-y_cont = [m_f00, m_f10]   # [56.32, 54.21]
-y_reset = [m_f01, m_f11]  # [56.88, 54.79]
+x_vals = [0, 1]
 
+# 1. Subtle raw paired seed trajectories (real empirical data, transparent)
+for i in range(n):
+    ax1.plot(x_vals, [f00[i], f10[i]], color=C_BLUE, alpha=0.18, lw=0.9, zorder=2)
+    ax1.plot(x_vals, [f01[i], f11[i]], color=C_GREEN, alpha=0.18, lw=0.9, linestyle='--', zorder=2)
+
+# 2. Population Means with 95% t-CI (Seaborn pointplot style)
+y_cont = [m_f00, m_f10]
+y_reset = [m_f01, m_f11]
 err_cont = [se_f00 * t_crit, se_f10 * t_crit]
 err_reset = [se_f01 * t_crit, se_f11 * t_crit]
 
-# 1. Population mean trajectories with 95% CIs (faint background seed lines removed for maximum clarity)
-ax1.errorbar(x, y_cont, yerr=err_cont, fmt='o-', color=C_BLUE, lw=3.2, markersize=8.0,
-             capsize=4.5, capthick=1.5, label=r"Continuous Mom ($\mathbf{v}$ intact)", zorder=5)
-ax1.errorbar(x, y_reset, yerr=err_reset, fmt='s--', color=C_GREEN, lw=3.2, markersize=8.0,
-             capsize=4.5, capthick=1.5, label=r"Reset Mom ($\mathbf{v} \leftarrow \mathbf{0}$)", zorder=5)
+ax1.errorbar(x_vals, y_cont, yerr=err_cont, fmt='o-', color=C_BLUE, lw=2.0, markersize=6.5,
+             capsize=3.0, capthick=1.0, elinewidth=1.2, label=r'Continuous ($\mathbf{v}$ intact)', zorder=4)
+ax1.errorbar(x_vals, y_reset, yerr=err_reset, fmt='s--', color=C_GREEN, lw=2.0, markersize=6.5,
+             capsize=3.0, capthick=1.0, elinewidth=1.2, label=r'Reset ($\mathbf{v} \leftarrow \mathbf{0}$)', zorder=4)
 
-# 2. Numerical annotations with protective white backing
-ax1.text(-0.08, y_cont[0] - 0.12, f"{y_cont[0]:.2f}%", ha='right', va='center', fontsize=8.2, fontweight='bold', color=C_BLUE,
-         bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.90, zorder=6))
-ax1.text(-0.08, y_reset[0] + 0.12, f"{y_reset[0]:.2f}%", ha='right', va='center', fontsize=8.2, fontweight='bold', color=C_GREEN,
-         bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.90, zorder=6))
-ax1.text(1.08, y_cont[1] - 0.12, f"{y_cont[1]:.2f}%", ha='left', va='center', fontsize=8.2, fontweight='bold', color=C_BLUE,
-         bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.90, zorder=6))
-ax1.text(1.08, y_reset[1] + 0.12, f"{y_reset[1]:.2f}%", ha='left', va='center', fontsize=8.2, fontweight='bold', color=C_GREEN,
-         bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.90, zorder=6))
+# 3. Clean numeric annotations (human academic typography, zero bounding boxes)
+ax1.text(-0.06, y_cont[0], f"{y_cont[0]:.2f}%", ha='right', va='center', fontsize=7.8, color=C_BLUE)
+ax1.text(-0.06, y_reset[0], f"{y_reset[0]:.2f}%", ha='right', va='center', fontsize=7.8, color=C_GREEN)
+ax1.text(1.06, y_cont[1], f"{y_cont[1]:.2f}%", ha='left', va='center', fontsize=7.8, color=C_BLUE)
+ax1.text(1.06, y_reset[1], f"{y_reset[1]:.2f}%", ha='left', va='center', fontsize=7.8, color=C_GREEN)
 
-# 3. Formatting
-ax1.set_xticks(x)
-ax1.set_xticklabels([r"Retained Head ($h_A$)" + "\n(Continuous)", r"Temp Head ($h_{\mathrm{temp}}$)" + "\n(Substituted)"], fontsize=8.2, fontweight='bold')
-ax1.set_ylabel("CIFAR-100 Test Accuracy (%)", fontsize=9.0, fontweight='bold', color=C_DARK)
-ax1.set_title("(a) Factorial Interaction", fontsize=9.8, fontweight='bold', color=C_DARK, pad=26)
+ax1.set_xticks(x_vals)
+ax1.set_xticklabels([r'Retained Head ($h_A$)' + '\n(Continuous)', r'Temp Head ($h_{\mathrm{temp}}$)' + '\n(Substituted)'], fontsize=8.0)
+ax1.set_ylabel('CIFAR-100 Test Accuracy (%)', fontsize=8.6, color=C_DARK)
+ax1.set_title('(a) Factorial Interaction', fontsize=9.2, fontweight='semibold', color=C_DARK, pad=10)
 
-# Zoom in to make slopes clearly readable (53.2 to 58.6)
-ax1.set_ylim(53.2, 58.6)
-ax1.set_yticks([54, 55, 56, 57, 58])
-ax1.set_yticklabels(["54%", "55%", "56%", "57%", "58%"], fontsize=8.2, fontweight='bold')
-ax1.set_xlim(-0.30, 1.30)
+ax1.set_ylim(52.2, 59.2)
+ax1.set_yticks([53, 54, 55, 56, 57, 58])
+ax1.set_yticklabels(['53%', '54%', '55%', '56%', '57%', '58%'], fontsize=7.8)
+ax1.set_xlim(-0.32, 1.32)
 
-# CLEAN OUTSIDE HORIZONTAL LEGEND - ZERO COLLISION WITH DATA!
-ax1.legend(loc='lower center', bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False, fontsize=7.6)
-ax1.grid(axis='y', linestyle=':', alpha=0.3, color='#CBD5E1')
+# 4. Classic Seaborn legend: upper right inside, borderless, crisp
+leg1 = ax1.legend(loc='upper right', frameon=False, fontsize=7.5, title="Momentum Buffer")
+leg1.get_title().set_fontsize(7.8)
+leg1.get_title().set_fontweight('semibold')
 
-ax1.spines['top'].set_visible(False)
-ax1.spines['right'].set_visible(False)
+ax1.grid(axis='y', linestyle='--', alpha=0.35, color='#cbd5e1')
+sns.despine(ax=ax1, trim=False)
 
 # =========================================================================
-# Panel (b): Marginal Contrasts Forest Plot
+# Panel (b): Marginal Contrasts Forest Plot (Authentic Seaborn Design)
 # =========================================================================
-y_pos = [2, 1, 0] # Top to bottom
+y_pos = [2, 1, 0]
 labels = [
-    r"Head Substitution ($\Delta_{\mathrm{head}}$)" + "\n" + r"($F = 24.95, p = 0.004$)",
-    r"Momentum Reset ($\Delta_{\mathrm{mom}}$)" + "\n" + r"($F = 1.47, p = 0.279$)",
-    r"Factorial Interaction ($\Delta_{\mathrm{int}}$)" + "\n" + r"($F = 0.002, p = 0.967$)"
+    r'Head Substitution ($\Delta_{\mathrm{head}}$)' + '\n' + r'($F = 24.95, p = 0.004$)',
+    r'Momentum Reset ($\Delta_{\mathrm{mom}}$)' + '\n' + r'($F = 1.47, p = 0.279$)',
+    r'Interaction ($\Delta_{\mathrm{int}}$)' + '\n' + r'($F = 0.002, p = 0.967$)'
 ]
 effects_vals = [np.mean(diff_head), np.mean(diff_mom), np.mean(diff_int)]
 errors = [stats.sem(diff_head) * t_crit, stats.sem(diff_mom) * t_crit, stats.sem(diff_int) * t_crit]
-colors = [C_RED, C_GREEN, C_PURPLE]
+row_colors = [C_RED, C_GREEN, C_PURPLE]
 
-# Equivalence Region
-ax2.axvspan(-0.5, 0.5, facecolor='#EAFAF1', alpha=0.50, zorder=0)
-ax2.text(0.0, 2.52, "Equivalence Region (±0.5 pp)", color='#27AE60', ha='center', va='bottom', fontsize=7.2, fontweight='bold')
+# Soft Equivalence Region
+ax2.axvspan(-0.5, 0.5, facecolor='#2ca02c', alpha=0.07, zorder=0)
+ax2.text(0.0, 2.50, "Equivalence Band (±0.5 pp)", color='#2d7f36', ha='center', va='bottom', fontsize=7.2, fontweight='medium')
 
-# Null line (self-explanatory thick vertical dashed line)
-ax2.axvline(0.0, color=C_DARK, linestyle='--', lw=1.2, alpha=0.7, zorder=1)
+# Zero reference line
+ax2.axvline(0.0, color='#64748b', linestyle='--', lw=1.0, alpha=0.8, zorder=1)
 
-# Plot points and CIs
+# Horizontal error bars
 for i in range(3):
     m = effects_vals[i]
     err = errors[i]
-    col = colors[i]
+    col = row_colors[i]
     y = y_pos[i]
     
-    # 95% Confidence Interval bar with caps
-    ax2.errorbar(m, y, xerr=err, fmt='o', color=col, capsize=5.0, capthick=1.5,
-                 markersize=8.0, linewidth=2.4, zorder=5, markeredgecolor='white', markeredgewidth=0.8)
-    
-    # Clean annotations strictly above each point with white protective box
-    sign_str = f"{m:+.2f} pp"
-    ax2.text(m, y + 0.20, sign_str, ha='center', va='bottom', color=col, fontsize=7.8, fontweight='bold',
-             bbox=dict(boxstyle="round,pad=0.15", facecolor='white', edgecolor='none', alpha=0.90, zorder=6))
+    ax2.errorbar(m, y, xerr=err, fmt='o', color=col, capsize=3.5, capthick=1.0,
+                 markersize=6.5, lw=1.8, elinewidth=1.2, zorder=4)
+    # Natural value label strictly above point, plain text
+    ax2.text(m, y + 0.18, f"{m:+.2f} pp", ha='center', va='bottom', color=col, fontsize=7.5, fontweight='medium')
 
-# Formatting
 ax2.set_yticks(y_pos)
-ax2.set_yticklabels(labels, fontsize=8.0, fontweight='bold')
-ax2.set_xlabel("Marginal Paired Effect (pp)", fontsize=9.0, fontweight='bold', color=C_DARK)
-ax2.set_title("(b) Marginal Contrasts (95% CI)", fontsize=9.8, fontweight='bold', color=C_DARK, pad=26)
-ax2.set_xlim(-3.6, 2.4)
+ax2.set_yticklabels(labels, fontsize=7.8)
+ax2.set_xlabel('Marginal Effect (pp, 95% CI)', fontsize=8.6, color=C_DARK)
+ax2.set_title('(b) Marginal Contrasts', fontsize=9.2, fontweight='semibold', color=C_DARK, pad=10)
+ax2.set_xlim(-3.4, 2.2)
 ax2.set_ylim(-0.5, 2.8)
 ax2.set_xticks([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0])
-ax2.set_xticklabels(["-3.0", "-2.0", "-1.0", "0.0", "+1.0", "+2.0"], fontsize=8.2, fontweight='bold')
+ax2.set_xticklabels(['-3.0', '-2.0', '-1.0', '0.0', '+1.0', '+2.0'], fontsize=7.8)
 
-# Light horizontal gridlines behind the rows
-ax2.grid(axis='y', linestyle=':', alpha=0.3, color='#CBD5E1')
+ax2.grid(axis='y', linestyle='--', alpha=0.35, color='#cbd5e1')
+sns.despine(ax=ax2, trim=False)
 
-ax2.spines['top'].set_visible(False)
-ax2.spines['right'].set_visible(False)
-
-plt.subplots_adjust(left=0.10, right=0.98, top=0.86, bottom=0.16)
+plt.subplots_adjust(left=0.10, right=0.98, top=0.88, bottom=0.18)
 
 pdf_out = os.path.join(FIGURES_DIR, "figure_factorial_decomposition.pdf")
 png_out = os.path.join(FIGURES_DIR, "figure_factorial_decomposition.png")
-fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.06)
-fig.savefig(png_out, bbox_inches='tight', pad_inches=0.06, dpi=300)
+fig.savefig(pdf_out, bbox_inches='tight', pad_inches=0.04)
+fig.savefig(png_out, dpi=300, bbox_inches='tight', pad_inches=0.04)
 
 for d in [CLEAN_FIGURES_DIR]:
-    fig.savefig(os.path.join(d, "figure_factorial_decomposition.pdf"), bbox_inches='tight', pad_inches=0.06)
-    fig.savefig(os.path.join(d, "figure_factorial_decomposition.png"), bbox_inches='tight', pad_inches=0.06, dpi=300)
+    fig.savefig(os.path.join(d, "figure_factorial_decomposition.pdf"), bbox_inches='tight', pad_inches=0.04)
+    fig.savefig(os.path.join(d, "figure_factorial_decomposition.png"), dpi=300, bbox_inches='tight', pad_inches=0.04)
 
 plt.close(fig)
 print(f"Figure 3 successfully generated: {pdf_out}")
