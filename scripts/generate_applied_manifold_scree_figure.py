@@ -88,9 +88,9 @@ tsne_th3 = data['tsne_S1_theta3']
 tsne_c0 = data['tsne_C0_theta2']
 
 # =========================================================================
-# MAIN MANUSCRIPT FIGURE 7: 4 Panels in 1 Row (6.5 x 2.10 in)
+# MAIN MANUSCRIPT FIGURE 7: 4 Panels in 1 Row (Spacious Native 6.5 x 2.50 in)
 # =========================================================================
-fig = plt.figure(figsize=(6.5, 2.05), dpi=300)
+fig = plt.figure(figsize=(6.5, 2.50), dpi=300)
 gs = fig.add_gridspec(1, 4, width_ratios=[1.35, 1.0, 1.0, 1.0], wspace=0.28)
 
 ax_scree = fig.add_subplot(gs[0, 0])
@@ -118,11 +118,11 @@ ax_scree.grid(axis='y', linestyle='--', alpha=0.35, color='#cbd5e1')
 sns.despine(ax=ax_scree, trim=False)
 
 # Borderless legend inside scree plot in open upper right
-ax_scree.legend(loc='upper right', frameon=False, fontsize=7.0, handlelength=1.5, handletextpad=0.4)
+ax_scree.legend(loc='upper right', frameon=False, fontsize=7.2, handlelength=1.5, handletextpad=0.4)
 
 # Clean statistical annotation inside scree plot in open lower left
 ax_scree.text(0.06, 0.08, r"$\Delta\mathrm{EffRank} = -359$ dims ($p < 10^{-9}$)",
-              transform=ax_scree.transAxes, fontsize=6.8, color=C_RED, fontweight='medium')
+              transform=ax_scree.transAxes, fontsize=7.0, color=C_RED, fontweight='medium')
 
 # --- t-SNE panels helper ---
 def draw_tsne(ax, emb, title_line1, title_line2):
@@ -145,11 +145,11 @@ legend_elements = [
            markersize=5.0, label=CLASS_NAMES[i])
     for i in range(8)
 ]
-fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.63, 0.04),
-           ncol=8, frameon=False, fontsize=7.0,
+fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.63, 0.03),
+           ncol=8, frameon=False, fontsize=7.2,
            handletextpad=0.2, columnspacing=0.8)
 
-plt.subplots_adjust(left=0.08, right=0.98, top=0.82, bottom=0.18)
+plt.subplots_adjust(left=0.08, right=0.98, top=0.84, bottom=0.16)
 
 for d in FIGURE_DIRS:
     pdf_out = os.path.join(d, "figure_applied_manifold_and_scree.pdf")
